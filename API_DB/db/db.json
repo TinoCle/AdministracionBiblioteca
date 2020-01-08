@@ -1,0 +1,33 @@
+{
+    "accounts": [
+        {
+            "name": "Frida",
+            "surname": "Kahlo",
+            "email": "frida@gmail.com",
+            "password": "frida123",
+            "role": 1,
+            "id": 0
+        }
+    ],
+    "books": [
+        {
+            "title": "The beauty and the beast",
+            "author": "someone",
+            "inventory": 38,
+            "id": 1
+        },
+        {
+            "title": "Pinocho",
+            "author": "someone else",
+            "inventory": 25,
+            "id": 2
+        },
+        {
+            "title": "The house",
+            "author": "someone else x2",
+            "inventory": 17,
+            "id": 3
+        }
+    ],
+    "loans": []
+}
