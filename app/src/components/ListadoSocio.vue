@@ -85,7 +85,7 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="dialog = false">Cerrar</v-btn>
+            <v-btn color="primary" text @click="closeDialog">Cerrar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -110,9 +110,6 @@ export default {
     dialogText: ""
   }),
   methods: {
-    checkLogin() {
-      this.$store.state.accountId == 77 && this.$router.push("/login");
-    },
     getBooks() {
       var me = this;
       this.books = [];
@@ -202,7 +199,7 @@ export default {
       this.axios
         .post("http://localhost:5555/loans/lent", {
           Bid: id,
-          Pid: me.$store.state.accountId
+          Pid: me.$session.get("accountId")
         })
         .then(function() {
           me.snackbar = true;
@@ -212,7 +209,8 @@ export default {
         .catch(function(error) {
           if (error.message == "Network Error") {
             me.dialogTitle = "Error Interno";
-            me.dialogText = "Ocurrió un error, por favor vuelva a intentar en un momento.";
+            me.dialogText =
+              "Ocurrió un error, por favor vuelva a intentar en un momento.";
             me.dialog = true;
           }
           if (
@@ -221,9 +219,11 @@ export default {
               "The partner has already lent that book."
           ) {
             me.dialogTitle = "Libro ya pedido";
-            me.dialogText = "Este libro ya fue pedido, puede volver a pedirlo luego de devolverlo y así extender su periodo de préstamo.";
+            me.dialogText =
+              "Este libro ya fue pedido, puede volver a pedirlo luego de devolverlo y así extender su periodo de préstamo.";
             me.dialog = true;
           }
+          me.checkSession(error);
         });
     },
     returnBook(id) {
@@ -242,7 +242,8 @@ export default {
         .catch(function(error) {
           if (error.message == "Network Error") {
             me.dialogTitle = "Error Interno";
-            me.dialogText = "Ocurrió un error, por favor vuelva a intentar en un momento.";
+            me.dialogText =
+              "Ocurrió un error, por favor vuelva a intentar en un momento.";
             me.dialog = true;
           }
         });
@@ -250,13 +251,28 @@ export default {
     refreshMyBooks() {
       // Le doy tiempo al backend de actualizar todo
       setTimeout(() => this.getMyBooks(), 1000);
+    },
+    checkSession(error) {
+      if (error.response && error.response.data.message == "Invalid token") {
+        this.dialogTitle = "Sesión expirada";
+        this.dialogText = "Por favor, vuelva a iniciar sesión con sus credenciales.";
+        this.dialog = true;
+        this.$session.destroy();
+      }
+    },
+    closeDialog() {
+      this.dialog = false;
+      !this.$session.exists() && this.$router.push('/login');
     }
   },
   beforeMount() {
-    this.checkLogin();
-    this.getBooks();
-    this.getMyBooks();
-  }
+    if (this.$session.exists()) {
+      this.getBooks();
+      this.getMyBooks();
+    } else {
+      this.$router.push("/login");
+    }
+  },
 };
 </script>
 

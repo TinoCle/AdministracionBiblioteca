@@ -17,6 +17,25 @@
   </v-app>
 </template>
 
+<script>
+export default {
+  name: "Home",
+
+  data: () => ({
+
+  }),
+  beforeMount() {
+    if (this.$session.exists()) {
+      if (this.$session.get("accountRole") == 1) {
+        this.$router.push('/listadoSocio')
+      }
+    }
+  },
+  methods: {
+  }
+};
+</script>
+
 <style scoped>
 #container {
   background: url("../assets/background.jpg") no-repeat center center fixed;

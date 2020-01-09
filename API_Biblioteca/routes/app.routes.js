@@ -11,7 +11,7 @@ module.exports = app => {
   app.post('/books/', (req, res) => handler.addBook(req, res));
   app.delete('/books/:id', (req, res) => handler.deleteBook(req, res));
   app.get('/loans/', (req, res) => handler.listAllLoans(req, res));
-  app.post('/loans/lent', (req, res) => handler.lentBook(req, res));
+  app.post('/loans/lent', securedRoute, (req, res) => handler.lentBook(req, res));
   app.post('/loans/return', (req, res) => handler.returnBook(req, res));
   app.post('/time/', (req, res) => handler.modifyTime(req, res));
   app.post('/login', (req, res) => handler.login(req, res));

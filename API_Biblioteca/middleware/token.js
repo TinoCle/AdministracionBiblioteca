@@ -9,7 +9,7 @@ secureRoute.use((req, res, next) => {
     if (token) {
         jwt.verify(token, config.key, (err, decoded) => {
             if (err) {
-                return res.status(401).json({ mensaje: 'Invalid token' });
+                return res.status(401).json({ message: 'Invalid token' });
             } else {
                 req.decoded = decoded;
                 next();
@@ -17,7 +17,7 @@ secureRoute.use((req, res, next) => {
         });
     } else {
         res.status(404).send({
-            mensaje: 'No token provided.'
+            message: 'No token provided.'
         });
     }
 });

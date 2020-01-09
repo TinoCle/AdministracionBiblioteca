@@ -367,7 +367,7 @@ module.exports = {
         check: true
       };
       const token = jwt.sign(payload, config.key, {
-        expiresIn: "1m"
+        expiresIn: "7s"
       });
       response.token = token;
       res.status(200).json(response);
