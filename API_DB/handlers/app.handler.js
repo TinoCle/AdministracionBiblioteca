@@ -89,11 +89,12 @@ module.exports = {
         res.status(200).json({ message: "Book returned." });
     },
     /////////////////////////////////// TIME ///////////////////////////////////////
-    modifyTime: (req, res) => {
-        let { days } = req.body;
-        time.modifyTime(days);
-        res.status(200).json({ message: "Time changed.", new_time: time.getTime() });
-    },
+    // OUT OF SERVICE
+    // modifyTime: (req, res) => {
+    //     let { days } = req.body;
+    //     time.modifyTime(days);
+    //     res.status(200).json({ message: "Time changed.", new_time: time.getTime() });
+    // },
     /////////////////////////////////// ACCOUNTS ///////////////////////////////////////
     authenticate: (req, res) => {
         let {email} = req.body;

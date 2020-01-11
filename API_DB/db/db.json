@@ -7,27 +7,57 @@
             "password": "frida123",
             "role": 1,
             "id": 0
+        },
+        {
+            "name": "Rick",
+            "surname": "Sanchez",
+            "email": "rick@gmail.com",
+            "password": "rick123",
+            "role": 1,
+            "id": 1
         }
     ],
     "books": [
         {
-            "title": "The beauty and the beast",
-            "author": "someone",
-            "inventory": 38,
+            "title": "La Bella y la Bestia",
+            "author": "Gabrielle-Suzanne",
+            "inventory": 1,
+            "id": 0
+        },
+        {
+            "title": "Las aventuras de Pinocho",
+            "author": "Carlo Collodi",
+            "inventory": 1,
             "id": 1
         },
         {
-            "title": "Pinocho",
-            "author": "someone else",
-            "inventory": 25,
+            "title": "Harry Potter y el Prisionero de Azkaban",
+            "author": "J. K. Rowling",
+            "inventory": 1,
             "id": 2
         },
         {
-            "title": "The house",
-            "author": "someone else x2",
-            "inventory": 17,
+            "title": "Ami, el niño de las estrellas",
+            "author": "Enrique barrios",
+            "inventory": 100,
             "id": 3
         }
     ],
-    "loans": []
+    "loans": [
+        {
+            "partner": 1,
+            "book": 0,
+            "expiration_date": "2020-01-21T21:55:59.311Z"
+        },
+        {
+            "partner": 0,
+            "book": 0,
+            "expiration_date": "2020-01-01T21:58:20.222Z"
+        },
+        {
+            "partner": 0,
+            "book": 1,
+            "expiration_date": "2020-01-13T21:58:20.222Z"
+        }
+    ]
 }
