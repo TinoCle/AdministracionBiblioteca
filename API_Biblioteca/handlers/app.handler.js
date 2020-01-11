@@ -124,6 +124,7 @@ module.exports = {
     let id = req.params.id;
     if (valid.id(id)) {
       let partner = await get(res, `/partners/${id}`);
+      console.log("partner found: " + partner);
       if (partner != 500) {
         if (partner) {
           res.status(200).json(partner);
@@ -257,7 +258,7 @@ module.exports = {
       let partner = await get(null, `/partners/${Pid}`);
       let loans = await get(res, `/loans/${Bid}`);
       loans = loans.loans;
-      let debt = await get(null, `/debt/${Bid}`);
+      let debt = await get(null, `/debt/${Pid}`);
       debt = debt.debt;
       let isLoan = await get(null, `/isLoan/${Bid}/${Pid}`);
       isLoan = isLoan.isLoan;
@@ -343,14 +344,15 @@ module.exports = {
     }
   },
   ///////////////////////////////////////// TIME ////////////////////////////////////
-  modifyTime: (req, res) => {
-    let { days } = req.body;
-    if (valid.id(days)) {
-      post(res, { days: days }, '/modifyTime', 'POST');
-    } else {
-      res.status(400).json({ message: 'Invalid value.' });
-    }
-  },
+  // OUT OF SERVICE
+  // modifyTime: (req, res) => {
+  //   let { days } = req.body;
+  //   if (valid.id(days)) {
+  //     post(res, { days: days }, '/modifyTime', 'POST');
+  //   } else {
+  //     res.status(400).json({ message: 'Invalid value.' });
+  //   }
+  // },
   ///////////////////////////////////////// ACCOUNTS ////////////////////////////////////
   login: async (req, res) => {
     let { email } = req.body;
@@ -367,7 +369,7 @@ module.exports = {
         check: true
       };
       const token = jwt.sign(payload, config.key, {
-        expiresIn: "7s"
+        expiresIn: "30m"
       });
       response.token = token;
       res.status(200).json(response);

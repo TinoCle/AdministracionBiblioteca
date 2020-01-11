@@ -16,13 +16,19 @@ let getTable = (tableName) => {
 // nos dice si existe el partner
 // sirve para validar antes de realizar otra acción
 let getPartner = (id) => {
-  let partner = null;
+  let partner = {};
   getTable("accounts").forEach(entry => {
     if (entry.id == id) {
-      partner = entry;
+      partner.id = entry.id;
+      partner.name = entry.name;
+      partner.surname = entry.surname;
     }
   });
-  return partner;
+  if (partner.name) {
+    return partner;
+  } else {
+    return null;
+  }
 }
 
 // agrega un elemento a una tabla
@@ -81,6 +87,9 @@ let deleteBook = id => {
 let hasDebt = (id, time) => {
   let debt = false;
   getTable("loans").forEach(loan => {
+    if (loan.partner == id) {
+      console.log(`${loan.expiration_date} < ${time} = ${loan.expiration_date<time}`);
+    }
     if (loan.partner == id && loan.expiration_date < time) {
       debt = true;
     }

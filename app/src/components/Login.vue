@@ -80,15 +80,11 @@ export default {
 
           me.$session.start();
           me.$session.set("jwt", response.data.token);
-          me.$session.set("accountId", response.data.id);
+          me.$session.set("accountID", response.data.id);
           me.$session.set("accountRole", response.data.role);
           me.axios.defaults.headers.common = {
-            "authorization": response.data.token
+            "authorization": me.$session.get("jwt")
           }
-
-          // Guardo el accountId para usarlo en operaciones futuras
-          me.$store.commit("setAccountId", response.data.id);
-          me.$store.commit("setAccountRole", response.data.role);
           if (response.data.role == 1) {
             me.$router.push("/listadoSocio");
           }

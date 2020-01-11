@@ -16,9 +16,7 @@ secureRoute.use((req, res, next) => {
             }
         });
     } else {
-        res.status(404).send({
-            message: 'No token provided.'
-        });
+        return res.status(404).json({ message: 'No token provided.' });
     }
 });
 
