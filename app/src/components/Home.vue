@@ -27,7 +27,7 @@ export default {
   beforeMount() {
     if (this.$session.exists()) {
       if (this.$session.get("accountRole") == 1) {
-        this.$router.push('/listadoSocio')
+        this.$router.push('/homeSocio')
       }
     }
   },

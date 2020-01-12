@@ -98,6 +98,11 @@ let hasDebt = (id, time) => {
 }
 
 let lentBook = (Pid, Bid, expiration) => {
+  getTable("books").forEach(book => {
+    if (book.id == Bid) {
+      book.inventory -= 1;
+    }
+  });
   addEntry("loans", { partner: Pid, book: Bid, expiration_date: expiration });
   save();
 }

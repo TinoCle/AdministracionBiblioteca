@@ -256,8 +256,6 @@ module.exports = {
     if (valid.id(Pid) && valid.id(Bid)) {
       let book = await get(null, `/books/${Bid}`);
       let partner = await get(null, `/partners/${Pid}`);
-      let loans = await get(res, `/loans/${Bid}`);
-      loans = loans.loans;
       let debt = await get(null, `/debt/${Pid}`);
       debt = debt.debt;
       let isLoan = await get(null, `/isLoan/${Bid}/${Pid}`);
@@ -265,33 +263,27 @@ module.exports = {
       if (
         book != 500 &&
         partner != 500 &&
-        loans != 500 &&
         debt != 500 &&
         isLoan != 500
       ) {
         if (book) {
           if (book.inventory > 0) {
-            if (book.inventory > loans) {
-              if (partner) {
-                if (!debt) {
-                  if (!isLoan) {
-                    post(res, { Bid: Bid, Pid: Pid }, `/loans/lent`, 'POST');
-                    console.log(`POST /loans/lent OK`);
-                  } else {
-                    console.log(`POST /loans/lent ALREADY LENT`);
-                    res.status(400).json({ message: "The partner has already lent that book." });
-                  }
+            if (partner) {
+              if (!debt) {
+                if (!isLoan) {
+                  post(res, { Bid: Bid, Pid: Pid }, `/loans/lent`, 'POST');
+                  console.log(`POST /loans/lent OK`);
                 } else {
-                  console.log(`POST /loans/lent OVERDUE DEBTS`);
-                  res.status(400).json({ message: "The partner has overdue debts." });
+                  console.log(`POST /loans/lent ALREADY LENT`);
+                  res.status(400).json({ message: "The partner has already lent that book." });
                 }
               } else {
-                console.log(`POST /loans/lent PARTNER NOT FOUND`);
-                res.status(404).json({ message: "The partner doesn't exist." });
+                console.log(`POST /loans/lent OVERDUE DEBTS`);
+                res.status(400).json({ message: "The partner has overdue debts." });
               }
             } else {
-              console.log(`POST /loans/lent ALL LOAN`);
-              res.status(403).json({ message: "All copies of this book are on loan." });
+              console.log(`POST /loans/lent PARTNER NOT FOUND`);
+              res.status(404).json({ message: "The partner doesn't exist." });
             }
           } else {
             console.log(`POST /loans/lent EMPTY`);

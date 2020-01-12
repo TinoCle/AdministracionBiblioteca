@@ -86,10 +86,11 @@ export default {
             "authorization": me.$session.get("jwt")
           }
           if (response.data.role == 1) {
-            me.$router.push("/listadoSocio");
+            me.$router.push("/homeSocio");
           }
-          // response.data.role == 1 socio
-          // response.data.role == 0 bibliotecario
+          if (response.data.role == 2) {
+            me.$router.push("homeBibliotecario");
+          }
         })
         .catch(function(error) {
           if (error.response && error.response.status == 404) {

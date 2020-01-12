@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Login from '../components/Login.vue'
 import Home from '../components/Home.vue'
+import Login from '../components/Login.vue'
 import HomeSocio from '../components/HomeSocio.vue'
-import ListadoSocio from '../components/ListadoSocio.vue'
+import HomeBibliotecario from '../components/HomeBibliotecario.vue'
 
 Vue.use(VueRouter)
 
@@ -24,9 +24,9 @@ const routes = [
     component: HomeSocio
   },
   {
-    path: '/listadoSocio',
-    name: 'listadoSocio',
-    component: ListadoSocio
+    path: '/homeBibliotecario',
+    name: 'homeBibliotecario',
+    component: HomeBibliotecario
   }
 ]
 
