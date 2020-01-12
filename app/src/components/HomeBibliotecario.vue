@@ -1,38 +1,28 @@
 <template>
   <v-app id="container">
     <v-container fluid class="mx-auto my-auto">
+      <center>
+        <h1 class="white-text" style="padding-top:100px">{{ saludo }}</h1>
+      </center>
+      <br />
+      <br />
+      <br />
+      <!-- This is to brake the entire world, 3 times -->
       <v-row align="center" justify="center">
-        <v-col cols="4">
+        <v-col cols="4" align-self="start">
           <v-card max-width="600" class="mx-auto" shaped>
             <v-toolbar color="blue-grey darken-3" dark>
               <v-toolbar-title>Todos los libros</v-toolbar-title>
             </v-toolbar>
-            <v-list three-line subheader elevation="10">
-              <v-list-item v-for="book in books" :key="book.id">
+            <v-list two-line subheader elevation="10">
+              <v-list-item v-for="book in books" :key="book.id" @click="selectedBook = book">
                 <v-list-item-content>
-                  <v-list-item-title v-text="book.title"></v-list-item-title>
-                  <v-list-item-subtitle v-text="book.author"></v-list-item-subtitle>
-                  <v-list-item-subtitle v-if="book.inventory == 0" id="noStockSubtitle">Sin stock</v-list-item-subtitle>
+                  <v-list-item-title>📖 {{book.title}}</v-list-item-title>
+                  <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
+                  <!-- <v-list-item-subtitle v-if="book.inventory == 0" id="noStockSubtitle">Sin stock</v-list-item-subtitle> -->
                 </v-list-item-content>
 
                 <v-list-item-action>
-                  <v-btn
-                    class="ma-2"
-                    elevation="4"
-                    rounded
-                    dark
-                    color="light-blue"
-                    v-if="!zeroBooks && book.inventory>0"
-                    @click="lentBook(book.id)"
-                  >Pedir</v-btn>
-                  <v-btn
-                    class="ma-2"
-                    elevation="4"
-                    rounded
-                    dark
-                    color="grey"
-                    v-if="!zeroBooks && book.inventory == 0"
-                  >Pedir</v-btn>
                   <v-btn
                     class="ma-2"
                     elevation="4"
@@ -47,27 +37,35 @@
             </v-list>
           </v-card>
         </v-col>
+        <v-col cols="4" v-if="selectedBook" align-self="start">
+          <v-card max-width="600" class="mx-auto" shaped>
+            <center>
+              <p style="font-size:20px; padding:30px; padding-bottom:0px;">📖 {{selectedBook.title}}</p>
+              <p style="font-size:15px;">👤 {{selectedBook.author}}</p>
+              <v-divider></v-divider>
+            </center>
+            <p style="font-size:20px; padding-top:20px; padding-left:30px;">📚 Inventario:</p>
+            <p style="font-size:15px; padding-left:30px;">🔹 Disponibles: {{selectedBook.inventory}}</p>
+            <p style="font-size:15px; padding-left:30px; padding-bottom:30px;">🔹 Prestados: 3</p>
+            <v-fab-transition>
+              <v-btn absolute dark fab bottom right color="light-blue" @click="editDialog=true; newAuthor=''; newTitle=''">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </v-fab-transition>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row align="center" justify="center" style="padding-top:50px">
         <v-col cols="4">
           <v-card max-width="600" class="mx-auto" shaped>
             <v-toolbar color="blue-grey darken-3" dark>
-              <v-toolbar-title>Mis libros</v-toolbar-title>
+              <v-toolbar-title>Préstamos</v-toolbar-title>
             </v-toolbar>
-            <v-list three-line subheader elevation="10">
-              <v-list-item v-for="book in myBooks" :key="book.title">
+            <v-list two-line subheader elevation="10">
+              <v-list-item v-for="book in books" :key="book.id" @click="selectedBook = book">
                 <v-list-item-content>
-                  <v-list-item-title v-text="book.title" multiline></v-list-item-title>
-                  <v-list-item-subtitle v-text="book.author"></v-list-item-subtitle>
-                  <v-list-item-subtitle
-                    v-if="book.expired == 'yes'"
-                    id="expiredSubtitle"
-                    v-text="book.expiration"
-                  ></v-list-item-subtitle>
-                  <v-list-item-subtitle
-                    v-if="book.expired == 'almost'"
-                    id="almostExpiredSubtitle"
-                    v-text="book.expiration"
-                  ></v-list-item-subtitle>
-                  <v-list-item-subtitle v-if="book.expired == ''" v-text="book.expiration"></v-list-item-subtitle>
+                  <v-list-item-title>📖 {{book.title}}</v-list-item-title>
+                  <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
                 </v-list-item-content>
 
                 <v-list-item-action>
@@ -76,29 +74,49 @@
                     elevation="4"
                     rounded
                     dark
-                    color="red"
-                    v-if="!zeroMyBooks && !myBooksError"
-                    @click="returnBook(book.id); refreshMyBooks();"
-                  >Devolver</v-btn>
-                  <v-btn
-                    class="ma-2"
-                    elevation="4"
-                    rounded
-                    dark
                     color="light-blue"
-                    v-if="myBooksError"
-                    @click="getMyBooks"
+                    v-if="zeroBooks"
+                    @click="getBooks"
                   >Reintentar</v-btn>
                 </v-list-item-action>
               </v-list-item>
             </v-list>
           </v-card>
         </v-col>
+        <v-col cols="4" v-if="selectedBook"></v-col>
       </v-row>
       <v-snackbar v-model="snackbar" :timeout="3000" color="success" bottom>{{ snackText }}</v-snackbar>
+      <v-dialog v-if="selectedBook" v-model="editDialog" width="500">
+        <v-card>
+          <v-card-title style="color:white;" class="headline light-blue" primary-title>Editar libro</v-card-title>
+
+          <v-text-field
+            v-model="newTitle"
+            solo
+            :placeholder="selectedBook ? selectedBook.title : ''"
+            style="padding:30px; padding-bottom:0px;"
+          ></v-text-field>
+          <v-text-field
+            v-model="newAuthor"
+            solo
+            :placeholder="selectedBook ? selectedBook.author : ''"
+            style="padding:30px; padding-top:5px; padding-bottom:0px;"
+          ></v-text-field>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" text @click="editDialog = false">Cancelar</v-btn>
+            <v-btn color="primary" text @click="editDialog = false; modifyBook(selectedBook.id)">Guardar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-dialog v-model="dialog" width="500">
         <v-card>
-          <v-card-title color="white" class="headline light-blue" primary-title>{{ dialogTitle }}</v-card-title>
+          <v-card-title
+            style="color:white;"
+            class="headline light-blue"
+            primary-title
+          >{{ dialogTitle }}</v-card-title>
 
           <p class="mx-4 my-4">{{ dialogText }}</p>
 
@@ -124,14 +142,19 @@ export default {
 
   data: () => ({
     books: [],
-    myBooks: [],
+    loans: [],
     zeroBooks: false,
-    zeroMyBooks: false,
-    myBooksError: false,
-    snackbar: false, snackText: "",
-    dialog: false, dialogTitle: "", dialogText: "",
-    expirationMessage: true,
-    partnerName: ''
+    snackbar: false,
+    snackText: "",
+    dialog: false,
+    dialogTitle: "",
+    dialogText: "",
+    userName: "",
+    saludo: "Bienvenid@",
+    selectedBook: null,
+    editDialog: false,
+    newTitle: "",
+    newAuthor: ""
   }),
   methods: {
     getBooks() {
@@ -142,6 +165,10 @@ export default {
         .get("http://localhost:5555/books")
         .then(response => {
           response.data.forEach(book => {
+            if (me.selectedBook && me.selectedBook.id == book.id) {
+              me.selectedBook.title = book.title;
+              me.selectedBook.author = book.author;
+            }
             me.books.push(book);
           });
           // Si no trajo ningún libro
@@ -150,10 +177,10 @@ export default {
               title: "No hay libros para mostrar",
               author: "Intente nuevamente más tarde"
             });
-            me.myBooks.push({
-              title: "No hay libros para mostrar",
-              author: "Intente nuevamente más tarde"
-            });
+            // me.myBooks.push({
+            //   title: "No hay libros para mostrar",
+            //   author: "Intente nuevamente más tarde"
+            // });
             me.zeroBooks = true;
           } else {
             me.zeroBooks = false;
@@ -165,147 +192,69 @@ export default {
             title: "Error al cargar los libros",
             author: "Vuelva a intentar en un momento"
           });
-          me.myBooks.push({
-            title: "No hay libros para mostrar",
-            author: "Intente nuevamente más tarde"
-          });
+          // me.myBooks.push({
+          //   title: "No hay libros para mostrar",
+          //   author: "Intente nuevamente más tarde"
+          // });
           me.checkSession(error);
         });
     },
-    getMyBooks() {
-      if (!this.zeroBooks) {
-        this.myBooks = [];
+    modifyBook(id) {
+      if (this.newTitle != "" || this.newAuthor != "") {
+        // Relleno el que falte
+        if (this.newTitle == '') {
+          this.newTitle = this.selectedBook.title;
+        }
+        if (this.newAuthor == '') {
+          this.newAuthor = this.selectedBook.author;
+        }
+        this.snackbar = false;
+        this.editDialog = false;
         let me = this;
         this.axios
-          .get("http://localhost:5555/loans")
-          .then(response => {
-            me.myBooksError = false;
-            response.data.forEach(loan => {
-              // Si corresponde a este usuario
-              if (loan.partner == me.$session.get("accountID")) {
-                me.books.forEach(book => {
-                  let expiration,
-                    expired = "";
-                  if (book.id == loan.book) {
-                    let difference = me.differenceInDays(loan.expiration_date);
-                    if (difference < 0) {
-                      expiration = `Venció hace ${difference * -1} día`;
-                      expired = "yes";
-                      this.showExpirationMessage();
-                    } else {
-                      expiration = `Vence en ${difference} día`;
-                      if (difference <= 3) {
-                        expired = "almost";
-                      }
-                    }
-                    if (difference > 1 || difference < -1) {
-                      expiration = expiration + "s";
-                    }
-                    if (difference == 0) {
-                      expiration = "Vence hoy";
-                    }
-                    me.myBooks.push({
-                      title: book.title,
-                      author: book.author,
-                      expiration: expiration,
-                      id: book.id,
-                      expired: expired
-                    });
-                  }
-                });
-              }
-            });
-            // Si no trajo ningún libro
-            if (me.myBooks.length == 0) {
-              me.myBooks.push({
-                title: "No hay libros para mostrar",
-                author: ""
-              });
-              me.zeroMyBooks = true;
-            } else {
-              me.zeroMyBooks = false;
-            }
+          .put(`http://localhost:5555/books/${id}`, {
+            title: me.newTitle,
+            author: me.newAuthor
           })
-          .catch(error => {
-            me.myBooksError = true;
-            me.myBooks.push({
-              title: "Error al cargar los libros",
-              author: "Vuelva a intentar en un momento"
-            });
+          .then(function() {
+            me.snackText = "Libro modificado con éxito";
+            me.snackbar = true;
+            me.refreshBooks();
+          })
+          .catch(function(error) {
+            if (error.message == "Network Error") {
+              me.dialogTitle = "Error Interno";
+              me.dialogText =
+                "Ocurrió un error, por favor vuelva a intentar en un momento.";
+              me.dialog = true;
+            }
+            if (
+              error.response &&
+              error.response.data.message ==
+                "The partner has already lent that book."
+            ) {
+              me.dialogTitle = "Libro ya pedido";
+              me.dialogText =
+                "Este libro ya fue pedido, puede volver a pedirlo luego de devolverlo y así extender su periodo de préstamo.";
+              me.dialog = true;
+            }
+            if (
+              error.response &&
+              error.response.data.message == "The partner has overdue debts."
+            ) {
+              me.dialogTitle = "Préstamos expirados";
+              me.dialogText =
+                "Para pedir libros primero debe devolver los libros cuyo préstamo haya expirado.";
+              me.dialog = true;
+            }
             me.checkSession(error);
           });
       }
     },
-    lentBook(id) {
-      this.snackbar = false;
-      this.snackText = "";
-      let me = this;
-      this.axios
-        .post("http://localhost:5555/loans/lent", {
-          Bid: id,
-          Pid: me.$session.get("accountID")
-        })
-        .then(function() {
-          me.snackbar = true;
-          me.snackText = "Libro pedido con éxito";
-          me.refreshMyBooks();
-        })
-        .catch(function(error) {
-          if (error.message == "Network Error") {
-            me.dialogTitle = "Error Interno";
-            me.dialogText =
-              "Ocurrió un error, por favor vuelva a intentar en un momento.";
-            me.dialog = true;
-          }
-          if (
-            error.response &&
-            error.response.data.message ==
-              "The partner has already lent that book."
-          ) {
-            me.dialogTitle = "Libro ya pedido";
-            me.dialogText =
-              "Este libro ya fue pedido, puede volver a pedirlo luego de devolverlo y así extender su periodo de préstamo.";
-            me.dialog = true;
-          }
-          if (
-            error.response &&
-            error.response.data.message == "The partner has overdue debts."
-          ) {
-            me.dialogTitle = "Préstamos expirados";
-            me.dialogText =
-              "Para pedir libros primero debe devolver los libros cuyo préstamo haya expirado.";
-            me.dialog = true;
-          }
-          me.checkSession(error);
-        });
-    },
-    returnBook(id) {
-      this.snackbar = false;
-      this.snackText = "";
-      let me = this;
-      this.axios
-        .post("http://localhost:5555/loans/return", {
-          Bid: id,
-          Pid: me.$session.get("accountID")
-        })
-        .then(() => {
-          me.snackbar = true;
-          me.snackText = "Libro devuelto con éxito";
-          me.getBooks();
-        })
-        .catch(error => {
-          if (error.message == "Network Error") {
-            me.dialogTitle = "Error Interno";
-            me.dialogText =
-              "Ocurrió un error, por favor vuelva a intentar en un momento.";
-            me.dialog = true;
-          }
-          me.checkSession(error);
-        });
-    },
-    refreshMyBooks() {
+    refreshBooks() {
       // Le doy tiempo al backend de actualizar todo
-      setTimeout(() => this.getMyBooks(), 1000);
+      setTimeout(() => this.getBooks(), 1000);
+      // setTimeout(() => this.getLoans(), 1500);
     },
     checkSession(error) {
       if (error.response) {
@@ -331,23 +280,24 @@ export default {
       let d2 = Date.parse(date);
       return Math.round((d2 - d1) / 1000 / 86400);
     },
-    showExpirationMessage() {
-      if (this.expirationMessage) {
-        this.expirationMessage = false;
-        this.dialogTitle = "Préstamos vencidos";
-        this.dialogText = `
-        Hola ${this.partnerName}, usted posee préstamos vencidos.
-        Para poder pedir más libros deberá devolver aquellos cuya fecha de devolución ya haya pasado.
-        `;
-        this.dialog = true;
-      }
-    },
-    getPartnerName() {
+    getName() {
       let me = this;
       this.axios
         .get(`http://localhost:5555/partners/${this.$session.get("accountID")}`)
         .then(response => {
-          this.partnerName = response.data.name;
+          // lo guardo para usarlo desde el diálogo emergente
+          this.userName = response.data.name;
+          // genero el saludo
+          let hour = new Date().getHours();
+          if (hour >= 0 && hour <= 5) {
+            this.saludo = `Buenas noches, ${this.userName}`;
+          } else if (hour > 5 && hour <= 12) {
+            this.saludo = `Buen día, ${this.userName}`;
+          } else if (hour >= 13 && hour <= 20) {
+            this.saludo = `Buenas tardes, ${this.userName}`;
+          } else {
+            this.saludo = `Buenas noches, ${this.userName}`;
+          }
         })
         .catch(error => {
           me.checkSession(error);
@@ -359,9 +309,8 @@ export default {
       authorization: this.$session.get("jwt")
     };
     if (this.$session.exists()) {
-      this.getBooks();
-      this.getPartnerName();
-      this.refreshMyBooks();
+      this.getName();
+      this.refreshBooks();
     } else {
       this.$router.push("/login");
     }
@@ -388,5 +337,9 @@ export default {
 #noStockSubtitle {
   color: red;
   font-weight: bold;
+}
+h1 {
+  color: white;
+  font-size: 60px;
 }
 </style>

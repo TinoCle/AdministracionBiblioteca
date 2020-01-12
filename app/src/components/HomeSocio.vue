@@ -4,17 +4,17 @@
       <center><h1 class="white-text">{{ saludo }}</h1></center>
       <br><br><br> <!-- This is to brake the entire world, 3 times -->
       <v-row align="center" justify="center">
-        <v-col cols="4">
+        <v-col cols="4"  align-self="start">
           <v-card max-width="600" class="mx-auto" shaped>
             <v-toolbar color="blue-grey darken-3" dark>
               <v-toolbar-title>Todos los libros</v-toolbar-title>
             </v-toolbar>
-            <v-list three-line subheader elevation="10">
+            <v-list two-line subheader elevation="10">
               <v-list-item v-for="book in books" :key="book.id">
                 <v-list-item-content>
-                  <v-list-item-title v-text="book.title"></v-list-item-title>
-                  <v-list-item-subtitle v-text="book.author"></v-list-item-subtitle>
-                  <v-list-item-subtitle v-if="book.inventory == 0" id="noStockSubtitle">Sin stock</v-list-item-subtitle>
+                  <v-list-item-title>📖 {{book.title}}</v-list-item-title>
+                  <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
+                  <v-list-item-subtitle v-if="book.inventory == 0" id="noStockSubtitle">🚫 Sin stock</v-list-item-subtitle>
                 </v-list-item-content>
 
                 <v-list-item-action>
@@ -24,7 +24,7 @@
                     rounded
                     dark
                     color="light-blue"
-                    v-if="!zeroBooks && book.inventory>0"
+                    v-if="!zeroBooks && book.inventory > 0"
                     @click="lentBook(book.id)"
                   >Pedir</v-btn>
                   <v-btn
@@ -49,7 +49,7 @@
             </v-list>
           </v-card>
         </v-col>
-        <v-col cols="4">
+        <v-col cols="4"  align-self="start">
           <v-card max-width="600" class="mx-auto" shaped>
             <v-toolbar color="blue-grey darken-3" dark>
               <v-toolbar-title>Mis libros</v-toolbar-title>
@@ -57,13 +57,12 @@
             <v-list three-line subheader elevation="10">
               <v-list-item v-for="book in myBooks" :key="book.title">
                 <v-list-item-content>
-                  <v-list-item-title v-text="book.title" multiline></v-list-item-title>
-                  <v-list-item-subtitle v-text="book.author"></v-list-item-subtitle>
+                  <v-list-item-title>📖 {{book.title}}</v-list-item-title>
+                  <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
                   <v-list-item-subtitle
                     v-if="book.expired == 'yes'"
                     id="expiredSubtitle"
-                    v-text="book.expiration"
-                  ></v-list-item-subtitle>
+                  >❗ {{book.expiration}}</v-list-item-subtitle>
                   <v-list-item-subtitle
                     v-if="book.expired == 'almost'"
                     id="almostExpiredSubtitle"
@@ -100,7 +99,7 @@
       <v-snackbar v-model="snackbar" :timeout="3000" color="success" bottom>{{ snackText }}</v-snackbar>
       <v-dialog v-model="dialog" width="500">
         <v-card>
-          <v-card-title color="white" class="headline light-blue" primary-title>{{ dialogTitle }}</v-card-title>
+          <v-card-title  style="color:white;" class="headline light-blue" primary-title>{{ dialogTitle }}</v-card-title>
 
           <p class="mx-4 my-4">{{ dialogText }}</p>
 
@@ -137,7 +136,7 @@ export default {
     dialogText: "",
     expirationMessage: true,
     partnerName: "",
-    saludo: "Bienvenido@"
+    saludo: "Bienvenid@"
   }),
   methods: {
     getBooks() {
@@ -358,11 +357,11 @@ export default {
           this.partnerName = response.data.name;
           // genero el saludo
           let hour = new Date().getHours();
-          if (hour >= 0 && hour <=5) {
+          if (hour >= 0 && hour <= 5) {
             this.saludo = `Buenas noches, ${this.partnerName}`;
-          } else if (hour > 5 && hour <=12) {
+          } else if (hour > 5 && hour <= 12) {
             this.saludo = `Buen día, ${this.partnerName}`;
-          } else if (hour > 13 && hour <=20) {
+          } else if (hour >= 13 && hour <= 20) {
             this.saludo = `Buenas tardes, ${this.partnerName}`;
           } else {
             this.saludo = `Buenas noches, ${this.partnerName}`;

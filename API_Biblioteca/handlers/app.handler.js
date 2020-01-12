@@ -242,6 +242,12 @@ module.exports = {
       res.status(400).json({ message: "Invalid id." });
     }
   },
+  modifyBook: async (req, res) => {
+    let id = req.params.id;
+    let {title} = req.body;
+    let {author} = req.body;
+    await post(res, {title: title, author: author}, `/books/${id}`, 'PUT');
+  },
   ///////////////////////////////////////// LOANS ////////////////////////////////////
   listAllLoans: async (req, res) => {
     let loans = await get(res, `/loans`);

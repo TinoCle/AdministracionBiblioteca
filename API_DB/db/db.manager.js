@@ -83,6 +83,19 @@ let deleteBook = id => {
   save();
 }
 
+let modifyBook = (id, title, author) => {
+  let found = false;
+  getTable("books").forEach(book => {
+    if (book.id == id) {
+      book.title = title;
+      book.author = author;
+      found = true;
+    }
+  });
+  save();
+  return found;
+}
+
 // booleano que indica si se le venció una deuda a un partner
 let hasDebt = (id, time) => {
   let debt = false;
@@ -151,7 +164,7 @@ let match = (email, pass) => {
       r.id = account.id;
     }
   });
-  if (!r.role) {
+  if (r.role == null) {
     return -1
   } else {
     return r;
@@ -166,6 +179,7 @@ module.exports = {
   getBook,
   addBook,
   deleteBook,
+  modifyBook,
   hasDebt,
   lentBook,
   returnBook,

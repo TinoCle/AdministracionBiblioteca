@@ -7,6 +7,7 @@ module.exports = app => {
   app.delete('/partners/:id', (req, res) => handler.deletePartner(req, res));
   app.get('/books', (req, res) => handler.getBooks(req, res));
   app.get('/books/:id', (req, res) => handler.getBook(req, res));
+  app.put('/books/:id', (req, res) => handler.modifyBook(req, res));
   app.post('/newBook', (req, res) => handler.createBook(req, res));
   app.post('/books', (req, res) => handler.addBook(req, res));
   app.delete('/books/:id', (req, res) => handler.deleteBook(req, res));

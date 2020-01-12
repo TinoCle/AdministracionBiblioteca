@@ -57,6 +57,16 @@ module.exports = {
         db.deleteBook(id);
         res.status(204).json({ message: 'Deleted.' });
     },
+    modifyBook: (req, res) => {
+        let id = req.params.id;
+        let {title} = req.body;
+        let {author} = req.body;
+        if (db.modifyBook(id, title, author)) {
+            res.status(200).json({ message: 'Modified.' });
+        } else {
+            res.status(404).json({ message: 'Not found.' });
+        }
+    },
     /////////////////////////////////// LOANS ///////////////////////////////////////
     getLoans: (req, res) => {
         console.log('SELECT * FROM loans');

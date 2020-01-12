@@ -88,7 +88,7 @@ export default {
           if (response.data.role == 1) {
             me.$router.push("/homeSocio");
           }
-          if (response.data.role == 2) {
+          if (response.data.role == 0) {
             me.$router.push("homeBibliotecario");
           }
         })
