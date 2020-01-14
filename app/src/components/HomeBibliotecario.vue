@@ -15,11 +15,10 @@
               <v-toolbar-title>Todos los libros</v-toolbar-title>
             </v-toolbar>
             <v-list two-line subheader elevation="10">
-              <v-list-item v-for="book in books" :key="book.id" @click="selectedBook = book">
+              <v-list-item v-for="(book, index) in books" :key="`book-${index}`" @click="selectedBook = book">
                 <v-list-item-content>
                   <v-list-item-title>📖 {{book.title}}</v-list-item-title>
                   <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
-                  <!-- <v-list-item-subtitle v-if="book.inventory == 0" id="noStockSubtitle">Sin stock</v-list-item-subtitle> -->
                 </v-list-item-content>
 
                 <v-list-item-action>
@@ -46,9 +45,17 @@
             </center>
             <p style="font-size:20px; padding-top:20px; padding-left:30px;">📚 Inventario:</p>
             <p style="font-size:15px; padding-left:30px;">🔹 Disponibles: {{selectedBook.inventory}}</p>
-            <p style="font-size:15px; padding-left:30px; padding-bottom:30px;">🔹 Prestados: 3</p>
+            <p style="font-size:15px; padding-left:30px; padding-bottom:30px;">🔹 Prestados: {{selectedBook.lent}}</p>
             <v-fab-transition>
-              <v-btn absolute dark fab bottom right color="light-blue" @click="editDialog=true; newAuthor=''; newTitle=''">
+              <v-btn
+                absolute
+                dark
+                fab
+                bottom
+                right
+                color="light-blue"
+                @click="editDialog=true; newAuthor=''; newTitle=''"
+              >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
             </v-fab-transition>
@@ -61,11 +68,21 @@
             <v-toolbar color="blue-grey darken-3" dark>
               <v-toolbar-title>Préstamos</v-toolbar-title>
             </v-toolbar>
-            <v-list two-line subheader elevation="10">
-              <v-list-item v-for="book in books" :key="book.id" @click="selectedBook = book">
+            <v-list three-line subheader elevation="10">
+              <v-list-item v-for="loan in loans" :key="loan.book">
                 <v-list-item-content>
-                  <v-list-item-title>📖 {{book.title}}</v-list-item-title>
-                  <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
+                  <v-list-item-title>📖 {{loan.bookTitle}}</v-list-item-title>
+                  <v-list-item-subtitle>👤 {{loan.partner}}</v-list-item-subtitle>
+                  <v-list-item-subtitle
+                    v-if="loan.expired == 'yes'"
+                    id="expiredSubtitle"
+                  >❗ {{loan.expiration}}</v-list-item-subtitle>
+                  <v-list-item-subtitle
+                    v-if="loan.expired == 'almost'"
+                    id="almostExpiredSubtitle"
+                    v-text="loan.expiration"
+                  ></v-list-item-subtitle>
+                  <v-list-item-subtitle v-if="loan.expired == ''" v-text="loan.expiration"></v-list-item-subtitle>
                 </v-list-item-content>
 
                 <v-list-item-action>
@@ -83,7 +100,7 @@
             </v-list>
           </v-card>
         </v-col>
-        <v-col cols="4" v-if="selectedBook"></v-col>
+        <!-- <v-col cols="4"></v-col> -->
       </v-row>
       <v-snackbar v-model="snackbar" :timeout="3000" color="success" bottom>{{ snackText }}</v-snackbar>
       <v-dialog v-if="selectedBook" v-model="editDialog" width="500">
@@ -106,7 +123,11 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="red" text @click="editDialog = false">Cancelar</v-btn>
-            <v-btn color="primary" text @click="editDialog = false; modifyBook(selectedBook.id)">Guardar</v-btn>
+            <v-btn
+              color="primary"
+              text
+              @click="editDialog = false; modifyBook(selectedBook.id)"
+            >Guardar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -166,8 +187,7 @@ export default {
         .then(response => {
           response.data.forEach(book => {
             if (me.selectedBook && me.selectedBook.id == book.id) {
-              me.selectedBook.title = book.title;
-              me.selectedBook.author = book.author;
+              me.selectedBook = book;
             }
             me.books.push(book);
           });
@@ -199,13 +219,89 @@ export default {
           me.checkSession(error);
         });
     },
+    getLoans() {
+      if (!this.zeroBooks) {
+        this.loans = [];
+        this.received = [];
+        let me = this;
+        me.loansError = false;
+        this.axios
+          .get("http://localhost:5555/loans")
+          .then(response => {
+            response.data.forEach(loan => {
+              me.received.push(loan);
+            });
+          })
+          .catch(error => {
+            me.loansError = true;
+            me.loans.push({
+              title: "Error al cargar los libros",
+              author: "Vuelva a intentar en un momento"
+            });
+            me.checkSession(error);
+          });
+          setTimeout(() => {
+            this.received.forEach(loan => {
+              let title;
+              for (let i=0;i<this.books.length;i++) {
+                if (this.books[i].id == loan.book) {
+                  title = this.books[i].title;
+                  break;
+                }
+              }
+              let expiration, expired = "";
+              let difference = this.differenceInDays(loan.expiration_date);
+              if (difference < 0) {
+                expiration = `Venció hace ${difference * -1} día`;
+                expired = "yes";
+              } else {
+                expiration = `Vence en ${difference} día`;
+                if (difference <= 3) {
+                  expired = "almost";
+                }
+              }
+              if (difference > 1 || difference < -1) {
+                expiration = expiration + "s";
+              }
+              if (difference == 0) {
+                expiration = "Vence hoy";
+              }
+              this.loans.push({
+                bookTitle: title,
+                partner: loan.partner,
+                expiration: expiration,
+                expired: expired
+              });
+              // Si no trajo ningún libro
+              if (this.loans.length == 0) {
+                this.loans.push({
+                  title: "No hay libros para mostrar",
+                  author: ""
+                });
+                this.zeroMyBooks = true;
+              } else {
+                this.zeroMyBooks = false;
+              }
+              this.books.forEach(book => {
+                book.lent = 0;
+                for (let i=0;i<this.loans.length;i++) {
+                  if (book.title == this.loans[i].bookTitle) {
+                    book.lent +=1;
+                  }
+                }
+              });
+              this.getAllNames();
+            });
+          }, 500);
+      }
+    },
     modifyBook(id) {
       if (this.newTitle != "" || this.newAuthor != "") {
         // Relleno el que falte
-        if (this.newTitle == '') {
+        if (this.newTitle == "") {
           this.newTitle = this.selectedBook.title;
         }
-        if (this.newAuthor == '') {
+        if (this.newAuthor == "") {
           this.newAuthor = this.selectedBook.author;
         }
         this.snackbar = false;
@@ -254,7 +350,7 @@ export default {
     refreshBooks() {
       // Le doy tiempo al backend de actualizar todo
       setTimeout(() => this.getBooks(), 1000);
-      // setTimeout(() => this.getLoans(), 1500);
+      setTimeout(() => this.getLoans(), 1000);
     },
     checkSession(error) {
       if (error.response) {
@@ -283,25 +379,44 @@ export default {
     getName() {
       let me = this;
       this.axios
-        .get(`http://localhost:5555/partners/${this.$session.get("accountID")}`)
+        .get(`http://localhost:5555/partners/${me.$session.get("accountID")}`)
         .then(response => {
           // lo guardo para usarlo desde el diálogo emergente
           this.userName = response.data.name;
-          // genero el saludo
-          let hour = new Date().getHours();
-          if (hour >= 0 && hour <= 5) {
-            this.saludo = `Buenas noches, ${this.userName}`;
-          } else if (hour > 5 && hour <= 12) {
-            this.saludo = `Buen día, ${this.userName}`;
-          } else if (hour >= 13 && hour <= 20) {
-            this.saludo = `Buenas tardes, ${this.userName}`;
-          } else {
-            this.saludo = `Buenas noches, ${this.userName}`;
-          }
+          this.generateGreeting();
         })
         .catch(error => {
           me.checkSession(error);
         });
+    },
+    getAllNames() {
+      let me = this;
+      this.axios
+        .get("http://localhost:5555/partners")
+        .then(response => {
+          response.data.forEach(partner => {
+            for (let i=0;i<me.loans.length;i++) {
+              if (me.loans[i].partner == partner.id) {
+                me.loans[i].partner = `${partner.name} ${partner.surname}`;
+              }
+            }
+          });
+        })
+        .catch(error => {
+          me.checkSession(error);
+        });
+    },
+    generateGreeting() {
+      let hour = new Date().getHours();
+      if (hour >= 0 && hour <= 5) {
+        this.saludo = `Buenas noches, ${this.userName}`;
+      } else if (hour > 5 && hour <= 12) {
+        this.saludo = `Buen día, ${this.userName}`;
+      } else if (hour >= 13 && hour <= 20) {
+        this.saludo = `Buenas tardes, ${this.userName}`;
+      } else {
+        this.saludo = `Buenas noches, ${this.userName}`;
+      }
     }
   },
   beforeMount() {
