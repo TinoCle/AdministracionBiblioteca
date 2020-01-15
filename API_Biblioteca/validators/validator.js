@@ -1,7 +1,7 @@
 // sólo números
 let ID = /^[0-9]+$/;
 // mayúsculas, minúsculas o espacios
-let STRING = /^[A-Za-z ?]+$/;
+let STRING = /^[A-Za-z ?]+\.+$/;
 
 module.exports = {
   id: id => {

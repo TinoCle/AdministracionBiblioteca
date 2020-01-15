@@ -47,8 +47,9 @@ module.exports = {
         let { title } = req.body;
         let { author } = req.body;
         let { id } = req.body;
-        console.log(`INSERT INTO books VALUES(${title},${author},1,${id})`);
-        db.addEntry("books", { title: title, author: author, inventory: 1, id: id });
+        let { inventory } = req.body;
+        console.log(`INSERT INTO books VALUES(${title},${author},${inventory},${id})`);
+        db.addEntry("books", { title: title, author: author, inventory: inventory ? inventory : 1, id: id });
         res.status(201).json({ message: 'Created.' });
     },
     deleteBook: (req, res) => {

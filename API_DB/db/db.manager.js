@@ -33,6 +33,12 @@ let getPartner = (id) => {
 
 // agrega un elemento a una tabla
 let addEntry = (tableName, entry) => {
+  if (tableName == "books") {
+    let books = getTable("books");
+    if (!entry.id) {
+      entry.id = books.length; // Asumiendo que se mantiene el orden
+    }
+  }
   json[tableName].push(entry);
   save();
 }
@@ -70,13 +76,13 @@ let addBook = (id) => {
 let deleteBook = id => {
   getTable("books").forEach(book => {
     if (book.id == id) {
-      if(book.inventory > 0) {
+      if (book.inventory > 0) {
         book["inventory"] -= 1;
         console.log(`book ${id} inventory-=1`);
       }
       if (book.inventory == 0) {
         console.log(`book ${id} deleted`);
-        json["books"].splice(id-1, 1);
+        json["books"].splice(id - 1, 1);
       }
     }
   });
@@ -101,7 +107,7 @@ let hasDebt = (id, time) => {
   let debt = false;
   getTable("loans").forEach(loan => {
     if (loan.partner == id) {
-      console.log(`${loan.expiration_date} < ${time} = ${loan.expiration_date<time}`);
+      console.log(`${loan.expiration_date} < ${time} = ${loan.expiration_date < time}`);
     }
     if (loan.partner == id && loan.expiration_date < time) {
       debt = true;
@@ -168,7 +174,7 @@ let match = (email, pass) => {
     return -1
   } else {
     return r;
-  } 
+  }
 }
 
 module.exports = {

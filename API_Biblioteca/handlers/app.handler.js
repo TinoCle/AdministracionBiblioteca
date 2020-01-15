@@ -201,21 +201,25 @@ module.exports = {
     let { title } = req.body;
     let { author } = req.body;
     let { id } = req.body;
-
-    if (valid.string(title) && valid.string(author) && valid.id(id)) {
-      let book = await get(res, `/books/${id}`);
-      if (book != 500) {
-        if (book) {
-          console.log(`POST /books/${id} +1`);
-          post(res, req.body, `/books`, 'POST');
-        } else {
-          console.log(`POST /books/${id} NEW`);
-          post(res, req.body, `/newBook`, 'POST');
+    if (id) {
+      if (valid.id(id)) {
+        let book = await get(res, `/books/${id}`);
+        if (book != 500) {
+          if (book) {
+            console.log(`POST /books/${id} +1`);
+            post(res, req.body, `/books`, 'POST');
+          } else {
+            console.log(`POST /books/${id} NEW`);
+            post(res, req.body, `/newBook`, 'POST');
+          }
         }
+      } else {
+        console.log(`POST /books/${id} INVALID DATA`);
+        res.status(400).json({ message: "Invalid data." });
       }
     } else {
-      console.log(`POST /books/${id} INVALID DATA`);
-      res.status(400).json({ message: "Invalid data." });
+      console.log(`POST /books/ NEW`);
+      post(res, req.body, `/newBook`, 'POST');
     }
   },
   deleteBook: async (req, res) => {
@@ -244,9 +248,9 @@ module.exports = {
   },
   modifyBook: async (req, res) => {
     let id = req.params.id;
-    let {title} = req.body;
-    let {author} = req.body;
-    await post(res, {title: title, author: author}, `/books/${id}`, 'PUT');
+    let { title } = req.body;
+    let { author } = req.body;
+    await post(res, { title: title, author: author }, `/books/${id}`, 'PUT');
   },
   ///////////////////////////////////////// LOANS ////////////////////////////////////
   listAllLoans: async (req, res) => {

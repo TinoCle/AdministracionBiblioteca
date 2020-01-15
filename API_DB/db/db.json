@@ -49,6 +49,12 @@
             "author": "Enrique barrios",
             "inventory": 5,
             "id": 3
+        },
+        {
+            "title": "Harry Potter y el Principe Mestizo",
+            "author": "J. K. Rowling",
+            "inventory": 5,
+            "id": 4
         }
     ],
     "loans": [

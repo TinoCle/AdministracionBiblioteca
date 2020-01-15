@@ -8,7 +8,7 @@ module.exports = app => {
   app.delete('/partners/:id', (req, res) => handler.deletePartner(req, res));
   app.get('/books/', securedRoute, (req, res) => handler.listAllBooks(req, res));
   app.get('/books/:id', (req, res) => handler.getBook(req, res));
-  app.post('/books/', (req, res) => handler.addBook(req, res));
+  app.post('/books/', securedRoute, (req, res) => handler.addBook(req, res));
   app.put('/books/:id', securedRoute, (req, res) => handler.modifyBook(req, res));
   app.delete('/books/:id', (req, res) => handler.deleteBook(req, res));
   app.get('/loans/', securedRoute, (req, res) => handler.listAllLoans(req, res));
