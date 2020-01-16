@@ -35,8 +35,19 @@ let getPartner = (id) => {
 let addEntry = (tableName, entry) => {
   if (tableName == "books") {
     let books = getTable("books");
+    if (!entry.inventory) {
+      entry.inventory = 1;
+    } else {
+      entry.inventory = parseInt(entry.inventory, 10); // viene como string
+    }
     if (!entry.id) {
-      entry.id = books.length; // Asumiendo que se mantiene el orden
+      let IDs = books.map(a => a.id);
+      console.log(IDs);
+      let id = 0;
+      while (IDs.includes(id)) {
+        id++;
+      }
+      entry.id = id;
     }
   }
   json[tableName].push(entry);
@@ -73,19 +84,24 @@ let addBook = (id) => {
   save();
 }
 
-let deleteBook = id => {
-  getTable("books").forEach(book => {
-    if (book.id == id) {
-      if (book.inventory > 0) {
-        book["inventory"] -= 1;
-        console.log(`book ${id} inventory-=1`);
-      }
-      if (book.inventory == 0) {
-        console.log(`book ${id} deleted`);
-        json["books"].splice(id - 1, 1);
+let deleteBook = (id, all) => {
+  let books = getTable("books");
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].id == id) {
+      if (all) {
+        json["books"].splice(i, 1);
+        console.log(`Book ${id} deleted`);
+        break;
+      } else {
+        books[i].inventory -= 1;
+        console.log(`Book ${id} deleted a copy`);
+        if (books[i].inventory == 0) {
+          json["books"].splice(i, 1);
+          console.log(`Book ${id} deleted`);
+        }
       }
     }
-  });
+  }
   save();
 }
 

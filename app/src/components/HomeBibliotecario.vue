@@ -16,7 +16,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 icon
-                @click="newBookDialog = true; newAuthor = ''; newTitle = ''; newInventory = 0"
+                @click="newBookDialog = true; newAuthor = ''; newTitle = ''; newInventory = 1"
               >
                 <v-icon>mdi-book-plus</v-icon>
               </v-btn>
@@ -25,7 +25,7 @@
               <v-list-item
                 v-for="(book, index) in books"
                 :key="`book-${index}`"
-                @click="selectedBook = book"
+                @click="zeroBooks ? selectedBook = null : selectedBook = book"
               >
                 <v-list-item-content>
                   <v-list-item-title>📖 {{book.title}}</v-list-item-title>
@@ -40,7 +40,7 @@
                     dark
                     color="light-blue"
                     v-if="zeroBooks"
-                    @click="getBooks"
+                    @click="refreshBooks"
                   >Reintentar</v-btn>
                 </v-list-item-action>
               </v-list-item>
@@ -54,11 +54,26 @@
               <p style="font-size:15px;">👤 {{selectedBook.author}}</p>
               <v-divider></v-divider>
             </center>
-            <p style="font-size:20px; padding-top:20px; padding-left:30px;">📚 Inventario:</p>
-            <p style="font-size:15px; padding-left:30px;">🔹 Disponibles: {{selectedBook.inventory}}</p>
-            <p
-              style="font-size:15px; padding-left:30px; padding-bottom:30px;"
-            >🔹 Prestados: {{selectedBook.lent}}</p>
+            <v-row style="padding-bottom:20px;">
+              <v-col>
+                <p style="font-size:20px; padding-top:20px; padding-left:30px;">📚 Inventario:</p>
+                <p
+                  style="font-size:15px; padding-left:30px;"
+                >🔹 Disponibles: {{selectedBook.inventory}}</p>
+                <p style="font-size:15px; padding-left:30px;">🔹 Prestados: {{selectedBook.lent}}</p>
+              </v-col>
+              <v-col align-self="center" style="padding-top:20px;">
+                <div style="padding-left:50px;">
+                  <v-btn icon color="green" large @click="addCopy(selectedBook.id)">
+                    <v-icon large>mdi-plus-circle</v-icon>
+                  </v-btn>
+                  <v-btn icon color="red" large @click="removeCopy(selectedBook.id)">
+                    <v-icon large>mdi-minus-circle</v-icon>
+                  </v-btn>
+                </div>
+              </v-col>
+            </v-row>
+
             <v-fab-transition>
               <v-btn
                 absolute
@@ -67,7 +82,7 @@
                 bottom
                 right
                 color="light-blue"
-                @click="editDialog=true; newAuthor=''; newTitle=''"
+                @click="editDialog=true; newAuthor=selectedBook.author; newTitle=selectedBook.title"
               >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
@@ -105,8 +120,8 @@
                     rounded
                     dark
                     color="light-blue"
-                    v-if="zeroBooks"
-                    @click="getBooks"
+                    v-if="loansError"
+                    @click="refreshBooks"
                   >Reintentar</v-btn>
                 </v-list-item-action>
               </v-list-item>
@@ -166,23 +181,26 @@
           <v-text-field
             v-model="newTitle"
             solo
-            :placeholder="selectedBook ? selectedBook.title : ''"
+            placeholder="Título"
             style="padding:30px; padding-bottom:0px;"
           ></v-text-field>
           <v-text-field
             v-model="newAuthor"
             solo
-            :placeholder="selectedBook ? selectedBook.author : ''"
+            placeholder="Autor"
             style="padding:30px; padding-top:5px; padding-bottom:0px;"
           ></v-text-field>
 
           <v-card-actions>
+            <v-btn color="red" icon @click="deleteBook(selectedBook.id)">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
             <v-spacer></v-spacer>
-            <v-btn color="red" text @click="editDialog = false">Cancelar</v-btn>
+            <v-btn text @click="editDialog = false">Cancelar</v-btn>
             <v-btn
               color="primary"
               text
-              @click="editDialog = false; modifyBook(selectedBook.id)"
+              @click="editDialog = false; modifyBook(selectedBook.id);"
             >Guardar</v-btn>
           </v-card-actions>
         </v-card>
@@ -221,6 +239,7 @@ export default {
     books: [],
     loans: [],
     zeroBooks: false,
+    loansError: false,
     snackbar: false,
     snackText: "",
     dialog: false,
@@ -232,12 +251,12 @@ export default {
     editDialog: false,
     newTitle: "",
     newAuthor: "",
-    newInventory: 0,
+    newInventory: 1,
     newBookDialog: false,
     validNewBook: false,
     inventoryRules: [
       v => !!v || "Debe ingresar la cantidad de unidades",
-      v => /^[0-9]*$/.test(v) || "Sólo números en la cantidad", // algo@algo.algo
+      v => /^[1-9]*$/.test(v) || "Ingrese una cantidad válida", // algo@algo.algo
       v => (v || "").indexOf(" ") < 0 || "Esta cantidad no es válida" // sin espacios
     ],
     requiredRules: [v => !!v || "Debe completar este campo"]
@@ -251,7 +270,7 @@ export default {
         .get("http://localhost:5555/books")
         .then(response => {
           response.data.forEach(book => {
-            if (me.selectedBook && me.selectedBook.id == book.id) {
+            if (me.selectedBook != null && me.selectedBook.id == book.id) {
               me.selectedBook = book;
             }
             me.books.push(book);
@@ -285,14 +304,15 @@ export default {
         });
     },
     getLoans() {
+      this.loans = [];
       if (!this.zeroBooks) {
-        this.loans = [];
         this.received = [];
         let me = this;
         me.loansError = false;
         this.axios
           .get("http://localhost:5555/loans")
           .then(response => {
+            me.loansError = false;
             response.data.forEach(loan => {
               me.received.push(loan);
             });
@@ -300,8 +320,8 @@ export default {
           .catch(error => {
             me.loansError = true;
             me.loans.push({
-              title: "Error al cargar los libros",
-              author: "Vuelva a intentar en un momento"
+              bookTitle: "Error al cargar los préstamos",
+              partner: "Vuelva a intentar en un momento"
             });
             me.checkSession(error);
           });
@@ -359,6 +379,12 @@ export default {
             this.getAllNames();
           });
         }, 500);
+      } else {
+        this.loansError = true;
+        this.loans.push({
+          bookTitle: "Error al cargar los préstamos",
+          partner: "Vuelva a intentar en un momento"
+        });
       }
     },
     modifyBook(id) {
@@ -369,6 +395,12 @@ export default {
         }
         if (this.newAuthor == "") {
           this.newAuthor = this.selectedBook.author;
+        }
+        if (
+          this.newTitle == this.selectedBook.title &&
+          this.newAuthor == this.selectedBook.author
+        ) {
+          return; // no cambia nada
         }
         this.snackbar = false;
         this.editDialog = false;
@@ -413,6 +445,94 @@ export default {
           });
       }
     },
+    addCopy(id) {
+      this.snackbar = false;
+      this.dialog = false;
+      let me = this;
+      this.axios
+        .post(`http://localhost:5555/books/`, {
+          id: id
+        })
+        .then(function() {
+          me.refreshBooks();
+          me.snackText = "Copia añadida con éxito";
+          me.snackbar = true;
+        })
+        .catch(function(error) {
+          if (error.message == "Network Error") {
+            me.dialogTitle = "Error Interno";
+            me.dialogText =
+              "Ocurrió un error, por favor vuelva a intentar en un momento.";
+            me.dialog = true;
+          }
+          me.checkSession(error);
+        });
+    },
+    removeCopy(id) {
+      this.snackbar = false;
+      this.dialog = false;
+      let me = this;
+      if (this.selectedBook.inventory == 1) {
+        this.deleteBook(id);
+      } else {
+        this.axios
+          .delete(`http://localhost:5555/books/${id}`, {
+            id: id
+          })
+          .then(function() {
+            me.refreshBooks();
+            me.snackText = "Copia eliminada con éxito";
+            me.snackbar = true;
+          })
+          .catch(function(error) {
+            if (error.message == "Network Error") {
+              me.dialogTitle = "Error Interno";
+              me.dialogText =
+                "Ocurrió un error, por favor vuelva a intentar en un momento.";
+              me.dialog = true;
+            }
+            me.checkSession(error);
+          });
+      }
+    },
+    deleteBook(id) {
+      if (
+        (this.selectedBook.title == this.newTitle &&
+          this.selectedBook.author == this.newAuthor) ||
+        this.selectedBook.inventory == 1
+      ) {
+        this.snackbar = false;
+        this.dialog = false;
+        let me = this;
+        this.axios
+          .delete(`http://localhost:5555/books/${id}`, { all: true })
+          .then(function() {
+            me.editDialog = false;
+            me.selectedBook = null;
+            me.snackText = "Libro eliminado con éxito";
+            me.snackbar = true;
+            me.refreshBooks();
+          })
+          .catch(function(error) {
+            if (error.message == "Network Error") {
+              me.dialogTitle = "Error Interno";
+              me.dialogText =
+                "Ocurrió un error, por favor vuelva a intentar en un momento.";
+              me.dialog = true;
+            }
+            if (
+              error.response &&
+              error.response.data.message == "The book has loans."
+            ) {
+              me.dialogTitle = "No se puede eliminar el libro";
+              me.dialogText =
+                "Este libro posee préstamos, todas las copias deben ser devueltas antes de eliminarlo del sistema.";
+              me.dialog = true;
+            }
+            me.checkSession(error);
+          });
+      }
+    },
     addBook() {
       this.snackbar = false;
       this.editDialog = false;
@@ -420,7 +540,8 @@ export default {
       this.axios
         .post(`http://localhost:5555/books/`, {
           title: me.newTitle,
-          author: me.newAuthor
+          author: me.newAuthor,
+          inventory: me.newInventory
         })
         .then(function() {
           me.snackText = "Libro agregado con éxito";
@@ -459,7 +580,7 @@ export default {
     refreshBooks() {
       // Le doy tiempo al backend de actualizar todo
       setTimeout(() => this.getBooks(), 1000);
-      setTimeout(() => this.getLoans(), 1000);
+      setTimeout(() => this.getLoans(), 1500);
     },
     checkSession(error) {
       if (error.response) {

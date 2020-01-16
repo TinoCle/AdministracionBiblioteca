@@ -50,10 +50,11 @@ post = (res, body, path, method) => {
       if (
         statusCode === 201 ||
         statusCode === 200 ||
-        statusCode === 204 ||
         statusCode === 404
       ) {
         res.status(statusCode).json(JSON.parse(data));
+      } else if (statusCode === 204) {
+        res.status(204).send();
       }
       else {
         res.status(500).json({ message: 'Internal server error.' });
@@ -124,7 +125,6 @@ module.exports = {
     let id = req.params.id;
     if (valid.id(id)) {
       let partner = await get(res, `/partners/${id}`);
-      console.log("partner found: " + partner);
       if (partner != 500) {
         if (partner) {
           res.status(200).json(partner);
@@ -198,10 +198,8 @@ module.exports = {
     }
   },
   addBook: async (req, res) => {
-    let { title } = req.body;
-    let { author } = req.body;
     let { id } = req.body;
-    if (id) {
+    if (id != undefined) {
       if (valid.id(id)) {
         let book = await get(res, `/books/${id}`);
         if (book != 500) {
@@ -209,7 +207,7 @@ module.exports = {
             console.log(`POST /books/${id} +1`);
             post(res, req.body, `/books`, 'POST');
           } else {
-            console.log(`POST /books/${id} NEW`);
+            console.log(`POST /books/ NEW`);
             post(res, req.body, `/newBook`, 'POST');
           }
         }
@@ -224,14 +222,17 @@ module.exports = {
   },
   deleteBook: async (req, res) => {
     let id = req.params.id;
+    let {all} = req.body;
     if (valid.id(id)) {
       let book = await get(res, `/books/${id}`);
       let loans = await get(res, `/loans/${id}`);
       if (book != 500 && loans != 500) {
         if (book) {
-          loans = loans.loans;
-          if (book.inventory > loans || loans == 0) {
-            post(res, null, `/books/${id}`, 'DELETE');
+          // si quiere borrrar todo y no tiene préstamos
+          // si quiere borrar la última copia y no tiene préstamos
+          // si tiene inventario suficiente
+          if ((all && !loans.loans) || (book.inventory == 1 && !loans.loans) || book.inventory > 1) {
+            post(res, { all: all}, `/books/${id}`, 'DELETE');
           } else {
             console.log(`DELETE /books/${id} HAS LOANS`);
             res.status(403).json({ message: "The book has loans." });

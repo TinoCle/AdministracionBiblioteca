@@ -55,7 +55,7 @@ module.exports = {
     deleteBook: (req, res) => {
         let id = req.params.id;
         console.log(`DELETE * FROM books WHERE id=${id}`);
-        db.deleteBook(id);
+        db.deleteBook(id, req.body.all);
         res.status(204).json({ message: 'Deleted.' });
     },
     modifyBook: (req, res) => {
