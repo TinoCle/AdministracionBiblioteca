@@ -8,10 +8,22 @@ let save = () => {
   });
 }
 // devuelve un array con todos los elementos de la tabla
-let getTable = (tableName) => {
+let getTable = tableName => {
   return json[tableName];
 }
 
+let getPartners = id => {
+  let partners = [];
+  getTable("accounts").forEach(partner => {
+    partners.push({
+      id: partner.id,
+      name: partner.name,
+      surname: partner.surname,
+      role: partner.role
+    });
+  });
+  return partners;
+}
 
 // nos dice si existe el partner
 // sirve para validar antes de realizar otra acción
@@ -42,7 +54,6 @@ let addEntry = (tableName, entry) => {
     }
     if (!entry.id) {
       let IDs = books.map(a => a.id);
-      console.log(IDs);
       let id = 0;
       while (IDs.includes(id)) {
         id++;
@@ -75,7 +86,7 @@ let getBook = id => {
   return found;
 }
 
-let addBook = (id) => {
+let addBook = id => {
   getTable("books").forEach(book => {
     if (book.id == id) {
       book["inventory"] += 1;
@@ -158,7 +169,7 @@ let returnBook = (Pid, Bid) => {
   save();
 }
 
-let howMuchLoans = (Bid) => {
+let howMuchLoans = Bid => {
   let r = 0;
   getTable("loans").forEach(loan => {
     if (loan.book == Bid) {
@@ -196,6 +207,7 @@ let match = (email, pass) => {
 module.exports = {
   getTable,
   getPartner,
+  getPartners,
   addEntry,
   deletePartner,
   getBook,

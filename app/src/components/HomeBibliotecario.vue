@@ -4,10 +4,10 @@
       <center>
         <h1 class="white-text" style="padding-top:100px">{{ saludo }}</h1>
       </center>
-      <br />
-      <br />
-      <br />
       <!-- This is to brake the entire world, 3 times -->
+      <br />
+      <br />
+      <br />
       <v-row align="center" justify="center">
         <v-col cols="4" align-self="start">
           <v-card max-width="600" class="mx-auto" shaped>
@@ -91,7 +91,7 @@
         </v-col>
       </v-row>
       <v-row align="center" justify="center" style="padding-top:50px">
-        <v-col cols="4">
+        <v-col cols="4" align-self="start">
           <v-card max-width="600" class="mx-auto" shaped>
             <v-toolbar color="blue-grey darken-3" dark>
               <v-toolbar-title>Préstamos</v-toolbar-title>
@@ -128,7 +128,46 @@
             </v-list>
           </v-card>
         </v-col>
-        <!-- <v-col cols="4"></v-col> -->
+        <v-col cols="4" align-self="start">
+          <v-card max-width="600" class="mx-auto" shaped>
+            <v-toolbar color="blue-grey darken-3" dark>
+              <v-toolbar-title>Cuentas de usuario</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-btn
+                icon
+                @click="newBookDialog = true; newAuthor = ''; newTitle = ''; newInventory = 1"
+              >
+                <v-icon>mdi-account-plus</v-icon>
+              </v-btn>
+            </v-toolbar>
+            <v-list two-line subheader elevation="10">
+              <v-list-item v-for="account in accounts" :key="account.id">
+                <v-list-item-content>
+                  <v-list-item-title>👤 {{account.name}}</v-list-item-title>
+                  <v-list-item-subtitle>🔰 {{account.role}}</v-list-item-subtitle>
+                </v-list-item-content>
+
+                <v-list-item-action v-if="account.id != $session.get('accountID')">
+                  <v-btn icon color="red" @click="deleteAccount(account.id)">
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </v-list-item-action>
+
+                <v-list-item-action>
+                  <v-btn
+                    class="ma-2"
+                    elevation="4"
+                    rounded
+                    dark
+                    color="light-blue"
+                    v-if="accountsError"
+                    @click="getAccounts"
+                  >Reintentar</v-btn>
+                </v-list-item-action>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-col>
       </v-row>
       <v-snackbar v-model="snackbar" :timeout="3000" color="success" bottom>{{ snackText }}</v-snackbar>
       <v-dialog v-model="newBookDialog" width="500">
@@ -238,8 +277,10 @@ export default {
   data: () => ({
     books: [],
     loans: [],
+    accounts: [],
     zeroBooks: false,
     loansError: false,
+    accountsError: false,
     snackbar: false,
     snackText: "",
     dialog: false,
@@ -281,14 +322,18 @@ export default {
               title: "No hay libros para mostrar",
               author: "Intente nuevamente más tarde"
             });
-            // me.myBooks.push({
-            //   title: "No hay libros para mostrar",
-            //   author: "Intente nuevamente más tarde"
-            // });
             me.zeroBooks = true;
           } else {
             me.zeroBooks = false;
           }
+          //ordeno el array
+          me.books.sort(function(a, b) {
+            if (a.title < b.title) {
+              return -1;
+            } else {
+              return 1;
+            }
+          });
         })
         .catch(error => {
           me.zeroBooks = true;
@@ -296,10 +341,6 @@ export default {
             title: "Error al cargar los libros",
             author: "Vuelva a intentar en un momento"
           });
-          // me.myBooks.push({
-          //   title: "No hay libros para mostrar",
-          //   author: "Intente nuevamente más tarde"
-          // });
           me.checkSession(error);
         });
     },
@@ -356,7 +397,9 @@ export default {
               bookTitle: title,
               partner: loan.partner,
               expiration: expiration,
-              expired: expired
+              expired: expired,
+              severity: difference, // para ordenar el array
+              id: loan.partner
             });
             // Si no trajo ningún libro
             if (this.loans.length == 0) {
@@ -368,6 +411,14 @@ export default {
             } else {
               this.zeroMyBooks = false;
             }
+            //ordeno el array segun vencimiento más severo
+            me.loans.sort(function(a, b) {
+              if (a.severity < b.severity) {
+                return -1;
+              } else {
+                return 1;
+              }
+            });
             this.books.forEach(book => {
               book.lent = 0;
               for (let i = 0; i < this.loans.length; i++) {
@@ -376,7 +427,7 @@ export default {
                 }
               }
             });
-            this.getAllNames();
+            this.getAccounts();
           });
         }, 500);
       } else {
@@ -385,6 +436,76 @@ export default {
           bookTitle: "Error al cargar los préstamos",
           partner: "Vuelva a intentar en un momento"
         });
+      }
+    },
+    getAccounts() {
+      var me = this;
+      this.axios
+        .get("http://localhost:5555/partners")
+        .then(response => {
+          me.accountsError = false;
+          me.accounts = [];
+          for (let i = 0; i < response.data.length; i++) {
+            for (let x = 0; x < me.loans.length; x++) {
+              if (me.loans[x].partner == response.data[i].id) {
+                me.loans[
+                  x
+                ].partner = `${response.data[i].name} ${response.data[i].surname}`;
+                break;
+              }
+            }
+            let role = response.data[i].role == 1 ? "Socio" : "Bibliotecario";
+            me.accounts.push({
+              id: response.data[i].id,
+              name: `${response.data[i].name} ${response.data[i].surname}`,
+              role: role
+            });
+          }
+          //ordeno el array
+          me.accounts.sort(function(a, b) {
+            if (a.role < b.role) {
+              return -1;
+            } else {
+              return 1;
+            }
+          });
+        })
+        .catch(error => {
+          me.accounts = [];
+          me.accountsError = true;
+          me.accounts.push({
+            name: "Error al cargar las cuentas",
+            role: "Vuelva a intentar en un momento"
+          });
+          me.checkSession(error);
+        });
+    },
+    deleteAccount(id) {
+      let IDs = this.loans.map(a => a.id);
+      if (IDs.includes(id)) {
+        this.dialogTitle = "No se puede eliminar la cuenta"
+        this.dialogText = "Esta cuenta posee préstamos activos, para eliminarla debe haber devuelto todos los libros."
+        this.dialog = true;
+      } else {
+        this.snackbar = false;
+        this.dialog = false;
+        let me = this;
+        this.axios
+          .delete(`http://localhost:5555/partners/${id}`, { all: true })
+          .then(function() {
+            me.snackText = "Cuenta eliminada con éxito";
+            me.snackbar = true;
+            me.getAccounts();
+          })
+          .catch(function(error) {
+            if (error.message == "Network Error") {
+              me.dialogTitle = "Error Interno";
+              me.dialogText =
+                "Ocurrió un error, por favor vuelva a intentar en un momento.";
+              me.dialog = true;
+            }
+            me.checkSession(error);
+          });
       }
     },
     modifyBook(id) {
@@ -473,7 +594,10 @@ export default {
       this.dialog = false;
       let me = this;
       if (this.selectedBook.inventory == 1) {
-        this.deleteBook(id);
+        this.dialogTitle = "No hay más copias";
+        this.dialogText =
+          "Ya no quedan copias por remover. Si desea eliminar el libro por completo diríjase al panel de edición del mismo.";
+        this.dialog = true;
       } else {
         this.axios
           .delete(`http://localhost:5555/books/${id}`, {
@@ -619,23 +743,6 @@ export default {
           me.checkSession(error);
         });
     },
-    getAllNames() {
-      let me = this;
-      this.axios
-        .get("http://localhost:5555/partners")
-        .then(response => {
-          response.data.forEach(partner => {
-            for (let i = 0; i < me.loans.length; i++) {
-              if (me.loans[i].partner == partner.id) {
-                me.loans[i].partner = `${partner.name} ${partner.surname}`;
-              }
-            }
-          });
-        })
-        .catch(error => {
-          me.checkSession(error);
-        });
-    },
     generateGreeting() {
       let hour = new Date().getHours();
       if (hour >= 0 && hour <= 5) {
@@ -656,6 +763,7 @@ export default {
     if (this.$session.exists()) {
       this.getName();
       this.refreshBooks();
+      this.getAccounts();
     } else {
       this.$router.push("/login");
     }

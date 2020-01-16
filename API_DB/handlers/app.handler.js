@@ -6,7 +6,7 @@ module.exports = {
     /////////////////////////////////// PARTNERS ///////////////////////////////////////
     getPartners: (req, res) => {
         console.log('SELECT * FROM partners');
-        res.status(200).json(db.getTable('accounts'));
+        res.status(200).json(db.getPartners());
     },
     getPartner: (req, res) => {
         let id = req.params.id;
