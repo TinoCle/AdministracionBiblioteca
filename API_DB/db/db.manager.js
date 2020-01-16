@@ -19,7 +19,8 @@ let getPartners = id => {
       id: partner.id,
       name: partner.name,
       surname: partner.surname,
-      role: partner.role
+      role: partner.role,
+      email: partner.email
     });
   });
   return partners;
@@ -46,20 +47,20 @@ let getPartner = (id) => {
 // agrega un elemento a una tabla
 let addEntry = (tableName, entry) => {
   if (tableName == "books") {
-    let books = getTable("books");
     if (!entry.inventory) {
       entry.inventory = 1;
     } else {
       entry.inventory = parseInt(entry.inventory, 10); // viene como string
     }
-    if (!entry.id) {
-      let IDs = books.map(a => a.id);
-      let id = 0;
-      while (IDs.includes(id)) {
-        id++;
-      }
-      entry.id = id;
+  }
+  let table = getTable(tableName);
+  if (!entry.id) {
+    let IDs = table.map(a => a.id);
+    let id = 0;
+    while (IDs.includes(id)) {
+      id++;
     }
+    entry.id = id;
   }
   json[tableName].push(entry);
   save();

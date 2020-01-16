@@ -4,7 +4,7 @@ const securedRoute = require('../middleware/token').secureRoute;
 module.exports = app => {
   app.get('/partners', securedRoute, (req, res) => handler.listAllPartners(req, res));
   app.get('/partners/:id', securedRoute, (req, res) => handler.getPartner(req, res));
-  app.post('/partners', (req, res) => handler.addPartner(req, res));
+  app.post('/partners', securedRoute, (req, res) => handler.addPartner(req, res));
   app.delete('/partners/:id', (req, res) => handler.deletePartner(req, res));
   app.get('/books/', securedRoute, (req, res) => handler.listAllBooks(req, res));
   app.get('/books/:id', (req, res) => handler.getBook(req, res));

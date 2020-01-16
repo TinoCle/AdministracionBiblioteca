@@ -16,7 +16,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 icon
-                @click="newBookDialog = true; newAuthor = ''; newTitle = ''; newInventory = 1"
+                @click="newBookDialog = true; newAuthor = ''; newTitle = ''; newInventory = null"
               >
                 <v-icon>mdi-book-plus</v-icon>
               </v-btn>
@@ -135,7 +135,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 icon
-                @click="newBookDialog = true; newAuthor = ''; newTitle = ''; newInventory = 1"
+                @click="newAccount.dialog = true; newAccount.name = ''; newAccount.surname = ''; newAccount.valid = false; newAccount.role = 0;"
               >
                 <v-icon>mdi-account-plus</v-icon>
               </v-btn>
@@ -187,7 +187,7 @@
               v-model="newAuthor"
               solo
               placeholder="Autor"
-              style="padding:30px; padding-bottom:0px;"
+              style="padding:30px; padding-bottom:0px; padding-top:0px;"
               prepend-icon="👤"
               :rules="requiredRules"
             ></v-text-field>
@@ -208,6 +208,78 @@
                 color="primary"
                 text
                 @click="newBookDialog = false; addBook()"
+              >Agregar</v-btn>
+            </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="newAccount.dialog" width="500">
+        <v-card>
+          <v-card-title
+            style="color:white;"
+            class="headline light-blue"
+            primary-title
+          >Nueva cuenta de usuario</v-card-title>
+
+          <v-form v-model="newAccount.valid">
+            <p style="font-size:20px; padding-top:30px; padding-left:30px;">📝 Datos personales:</p>
+            <v-text-field
+              v-model="newAccount.name"
+              solo
+              placeholder="Nombre"
+              style="padding:30px; padding-bottom:0px; padding-top:10px;"
+              prepend-icon="👤"
+              :rules="newAccount.namingRules"
+            ></v-text-field>
+            <v-text-field
+              v-model="newAccount.apellido"
+              solo
+              placeholder="Apellido"
+              style="padding:30px; padding-bottom:0px; padding-top:0px;"
+              prepend-icon="👤"
+              :rules="newAccount.namingRules"
+            ></v-text-field>
+
+            <p style="font-size:20px; padding-left:30px; padding-top:10px;">🔰 Rol:</p>
+            <v-radio-group v-model="newAccount.role" style="padding-left:30px;">
+              <v-radio label="Bibliotecario" :value="0" color="light-blue" style="padding-top:5px;"></v-radio>
+              <v-radio label="Socio" :value="1" color="light-blue" style="padding-top:10px;"></v-radio>
+            </v-radio-group>
+
+            <p style="font-size:20px; padding-top:10px; padding-left:30px;">📝 Datos de la cuenta:</p>
+            <v-text-field
+              v-model="newAccount.email"
+              solo
+              placeholder="Email"
+              style="padding:30px; padding-bottom:0px; padding-top:10px;"
+              prepend-icon="👤"
+              :rules="newAccount.emailRules"
+            ></v-text-field>
+            <v-text-field
+              v-model="newAccount.password"
+              solo
+              placeholder="Contraseña"
+              style="padding:30px; padding-bottom:0px; padding-top:0px;"
+              prepend-icon="👤"
+              :rules="requiredRules"
+            ></v-text-field>
+            <v-text-field
+              v-model="newAccount.password2"
+              solo
+              placeholder="Confirmación de contraseña"
+              style="padding:30px; padding-bottom:0px; padding-top:0px;"
+              prepend-icon="👤"
+              :rules="newAccount.pwdConfirm"
+            ></v-text-field>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="newAccount.dialog = false">Cancelar</v-btn>
+              <v-btn
+                :disabled="!newAccount.valid"
+                color="primary"
+                text
+                @click="newAccount.dialog = false; addAccount()"
               >Agregar</v-btn>
             </v-card-actions>
           </v-form>
@@ -274,34 +346,61 @@
 export default {
   name: "Login",
 
-  data: () => ({
-    books: [],
-    loans: [],
-    accounts: [],
-    zeroBooks: false,
-    loansError: false,
-    accountsError: false,
-    snackbar: false,
-    snackText: "",
-    dialog: false,
-    dialogTitle: "",
-    dialogText: "",
-    userName: "",
-    saludo: "Bienvenid@",
-    selectedBook: null,
-    editDialog: false,
-    newTitle: "",
-    newAuthor: "",
-    newInventory: 1,
-    newBookDialog: false,
-    validNewBook: false,
-    inventoryRules: [
-      v => !!v || "Debe ingresar la cantidad de unidades",
-      v => /^[1-9]*$/.test(v) || "Ingrese una cantidad válida", // algo@algo.algo
-      v => (v || "").indexOf(" ") < 0 || "Esta cantidad no es válida" // sin espacios
-    ],
-    requiredRules: [v => !!v || "Debe completar este campo"]
-  }),
+  data: function() {
+    return {
+      books: [],
+      loans: [],
+      accounts: [],
+      zeroBooks: false,
+      loansError: false,
+      accountsError: false,
+      snackbar: false,
+      snackText: "",
+      dialog: false,
+      dialogTitle: "",
+      dialogText: "",
+      userName: "",
+      saludo: "Bienvenid@",
+      selectedBook: null,
+      editDialog: false,
+      newTitle: "",
+      newAuthor: "",
+      newInventory: null,
+      newBookDialog: false,
+      newAccount: {
+        valid: false,
+        dialog: false,
+        role: 0,
+        name: null,
+        surname: null,
+        email: null,
+        password: null,
+        password2: null,
+        namingRules: [
+          v => !!v || "Debe completar este campo",
+          v =>
+            /^[A-Za-z]+$/.test(v) ||
+            "No se permiten números y/o caracteres especiales"
+        ],
+        emailRules: [
+          v => !!v || "Debe ingresar su e-mail",
+          v => /.+@.+\..+/.test(v) || "Este e-mail no es válido", // algo@algo.algo
+          v => (v || "").indexOf(" ") < 0 || "Este e-mail no es válido" // sin espacios
+        ],
+        pwdConfirm: [
+          v => !!v || "Confirme la contraseña",
+          v => v === this.newAccount.password || "Las contraseñas no coinciden"
+        ]
+      },
+      validNewBook: false,
+      inventoryRules: [
+        v => !!v || "Debe ingresar la cantidad de unidades",
+        v => /^[1-9]*$/.test(v) || "Ingrese una cantidad válida", // algo@algo.algo
+        v => (v || "").indexOf(" ") < 0 || "Esta cantidad no es válida" // sin espacios
+      ],
+      requiredRules: [v => !!v || "Debe completar este campo"]
+    };
+  },
   methods: {
     getBooks() {
       var me = this;
@@ -480,11 +579,37 @@ export default {
           me.checkSession(error);
         });
     },
+    addAccount() {
+      this.snackbar = false;
+      this.editDialog = false;
+      let me = this;
+      this.axios
+        .post(`http://localhost:5555/partners/`, {
+          title: me.newTitle,
+          author: me.newAuthor,
+          inventory: me.newInventory
+        })
+        .then(function() {
+          me.snackText = "Libro agregado con éxito";
+          me.snackbar = true;
+          me.refreshBooks();
+        })
+        .catch(function(error) {
+          if (error.message == "Network Error") {
+            me.dialogTitle = "Error Interno";
+            me.dialogText =
+              "Ocurrió un error, por favor vuelva a intentar en un momento.";
+            me.dialog = true;
+          }
+          me.checkSession(error);
+        });
+    },
     deleteAccount(id) {
       let IDs = this.loans.map(a => a.id);
       if (IDs.includes(id)) {
-        this.dialogTitle = "No se puede eliminar la cuenta"
-        this.dialogText = "Esta cuenta posee préstamos activos, para eliminarla debe haber devuelto todos los libros."
+        this.dialogTitle = "No se puede eliminar la cuenta";
+        this.dialogText =
+          "Esta cuenta posee préstamos activos, para eliminarla debe haber devuelto todos los libros.";
         this.dialog = true;
       } else {
         this.snackbar = false;
@@ -629,7 +754,7 @@ export default {
         this.dialog = false;
         let me = this;
         this.axios
-          .delete(`http://localhost:5555/books/${id}`, { all: true })
+          .delete(`http://localhost:5555/books/${id}`, { data: { all: true } }) // con este método hay que enviar el body así
           .then(function() {
             me.editDialog = false;
             me.selectedBook = null;
@@ -677,25 +802,6 @@ export default {
             me.dialogTitle = "Error Interno";
             me.dialogText =
               "Ocurrió un error, por favor vuelva a intentar en un momento.";
-            me.dialog = true;
-          }
-          if (
-            error.response &&
-            error.response.data.message ==
-              "The partner has already lent that book."
-          ) {
-            me.dialogTitle = "Libro ya pedido";
-            me.dialogText =
-              "Este libro ya fue pedido, puede volver a pedirlo luego de devolverlo y así extender su periodo de préstamo.";
-            me.dialog = true;
-          }
-          if (
-            error.response &&
-            error.response.data.message == "The partner has overdue debts."
-          ) {
-            me.dialogTitle = "Préstamos expirados";
-            me.dialogText =
-              "Para pedir libros primero debe devolver los libros cuyo préstamo haya expirado.";
             me.dialog = true;
           }
           me.checkSession(error);
