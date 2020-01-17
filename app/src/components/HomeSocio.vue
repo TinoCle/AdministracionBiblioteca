@@ -58,7 +58,7 @@
               <v-list-item v-for="book in myBooks" :key="book.title">
                 <v-list-item-content>
                   <v-list-item-title>📖 {{book.title}}</v-list-item-title>
-                  <v-list-item-subtitle>👤 {{book.author}}</v-list-item-subtitle>
+                  <v-list-item-subtitle v-if="book.author">👤 {{book.author}}</v-list-item-subtitle>
                   <v-list-item-subtitle
                     v-if="book.expired == 'yes'"
                     id="expiredSubtitle"

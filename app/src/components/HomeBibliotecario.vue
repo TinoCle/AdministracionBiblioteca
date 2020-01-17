@@ -135,7 +135,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 icon
-                @click="newAccount.dialog = true; newAccount.name = ''; newAccount.surname = ''; newAccount.valid = false; newAccount.role = 0;"
+                @click="newAccount.dialog = true; clearNewAccount();"
               >
                 <v-icon>mdi-account-plus</v-icon>
               </v-btn>
@@ -232,7 +232,7 @@
               :rules="newAccount.namingRules"
             ></v-text-field>
             <v-text-field
-              v-model="newAccount.apellido"
+              v-model="newAccount.surname"
               solo
               placeholder="Apellido"
               style="padding:30px; padding-bottom:0px; padding-top:0px;"
@@ -252,7 +252,7 @@
               solo
               placeholder="Email"
               style="padding:30px; padding-bottom:0px; padding-top:10px;"
-              prepend-icon="👤"
+              prepend-icon="mdi-account-circle"
               :rules="newAccount.emailRules"
             ></v-text-field>
             <v-text-field
@@ -260,26 +260,32 @@
               solo
               placeholder="Contraseña"
               style="padding:30px; padding-bottom:0px; padding-top:0px;"
-              prepend-icon="👤"
+              prepend-icon="mdi-lock"
+              :append-icon="!newAccount.showPass ? 'mdi-eye-off' : 'mdi-eye'"
+              @click:append="newAccount.showPass = !newAccount.showPass"
               :rules="requiredRules"
+              :type="!newAccount.showPass ? 'password' : 'text'"
             ></v-text-field>
             <v-text-field
               v-model="newAccount.password2"
               solo
               placeholder="Confirmación de contraseña"
               style="padding:30px; padding-bottom:0px; padding-top:0px;"
-              prepend-icon="👤"
+              prepend-icon="mdi-lock"
+              :append-icon="!newAccount.showPass2 ? 'mdi-eye-off' : 'mdi-eye'"
+              @click:append="newAccount.showPass2 = !newAccount.showPass2"
               :rules="newAccount.pwdConfirm"
+              :type="!newAccount.showPass2 ? 'password' : 'text'"
             ></v-text-field>
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="red" text @click="newAccount.dialog = false">Cancelar</v-btn>
+              <v-btn color="red" text @click="newAccount.dialog = false; clearNewAccount();">Cancelar</v-btn>
               <v-btn
                 :disabled="!newAccount.valid"
                 color="primary"
                 text
-                @click="newAccount.dialog = false; addAccount()"
+                @click="addAccount()"
               >Agregar</v-btn>
             </v-card-actions>
           </v-form>
@@ -376,6 +382,9 @@ export default {
         email: null,
         password: null,
         password2: null,
+        showPass: false,
+        showPass2: false,
+        validNewBook: false,
         namingRules: [
           v => !!v || "Debe completar este campo",
           v =>
@@ -392,7 +401,6 @@ export default {
           v => v === this.newAccount.password || "Las contraseñas no coinciden"
         ]
       },
-      validNewBook: false,
       inventoryRules: [
         v => !!v || "Debe ingresar la cantidad de unidades",
         v => /^[1-9]*$/.test(v) || "Ingrese una cantidad válida", // algo@algo.algo
@@ -585,24 +593,50 @@ export default {
       let me = this;
       this.axios
         .post(`http://localhost:5555/partners/`, {
-          title: me.newTitle,
-          author: me.newAuthor,
-          inventory: me.newInventory
+          name: me.newAccount.name,
+          surname: me.newAccount.surname,
+          email: me.newAccount.email,
+          password: me.newAccount.password,
+          role: me.newAccount.role
         })
         .then(function() {
-          me.snackText = "Libro agregado con éxito";
+          me.newAccount.dialog = false;
+          me.snackText = "Cuenta de usuario agregada con éxito";
           me.snackbar = true;
-          me.refreshBooks();
+          me.getAccounts();
         })
         .catch(function(error) {
-          if (error.message == "Network Error") {
+          if (error.message == "Network Error" || error.message == "Request failed with status code 500") {
             me.dialogTitle = "Error Interno";
             me.dialogText =
               "Ocurrió un error, por favor vuelva a intentar en un momento.";
             me.dialog = true;
           }
+          if (
+              error.response &&
+              error.response.data.message ==
+                "Email on use."
+            ) {
+              me.dialogTitle = "Email rechazado";
+              me.dialogText =
+                "El email elegido ya está en uso, por favor, intente nuevamente con otro.";
+              me.dialog = true;
+            }
           me.checkSession(error);
         });
+    },
+    clearNewAccount() {
+      this.newAccount.valid = false;
+      this.newAccount.role = 0;
+      this.newAccount.name = null;
+      this.newAccount.surname = null;
+      this.newAccount.email = null;
+      this.newAccount.password = null;
+      this.newAccount.password2 = null;
+      this.newAccount.showPass = false;
+      this.newAccount.showPass2 = false;
+      this.newAccount.validNewBook = false;
+      this.$refs.form.resetValidation();
     },
     deleteAccount(id) {
       let IDs = this.loans.map(a => a.id);

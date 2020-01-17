@@ -50,6 +50,7 @@ post = (res, body, path, method) => {
       if (
         statusCode === 201 ||
         statusCode === 200 ||
+        statusCode === 400 ||
         statusCode === 404
       ) {
         res.status(statusCode).json(JSON.parse(data));
@@ -158,7 +159,7 @@ module.exports = {
         res.status(400).json({ message: "Invalid data." });
       }
     } else {
-      console.log(`POST /partners/${id} NEW`);
+      console.log(`POST /partners/ NEW`);
       post(res, req.body, `/partners`, 'POST');
     }
   },

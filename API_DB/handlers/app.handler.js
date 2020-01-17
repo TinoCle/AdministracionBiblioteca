@@ -14,12 +14,13 @@ module.exports = {
         res.status(200).json(db.getPartner(id));
     },
     addPartner: (req, res) => {
-        let { name } = req.body;
-        let { surname } = req.body;
-        let { id } = req.body;
-        console.log(`INSERT INTO partners VALUES(${name},${surname},${id})`);
-        db.addEntry("partners", { name: name, surname: surname, id: id })
-        res.status(201).json({ message: 'Created.' });
+        console.log(`INSERT INTO partners VALUES(${req.body.name},${req.body.surname})`);
+        let response = db.addEntry("accounts", req.body)
+        if (response) {
+            res.status(201).json({ message: 'Created.' });
+        } else {
+            res.status(400).json({ message: 'Email on use.' });
+        }
     },
     deletePartner: (req, res) => {
         let id = req.params.id;

@@ -12,7 +12,7 @@ let getTable = tableName => {
   return json[tableName];
 }
 
-let getPartners = id => {
+let getPartners = () => {
   let partners = [];
   getTable("accounts").forEach(partner => {
     partners.push({
@@ -54,6 +54,13 @@ let addEntry = (tableName, entry) => {
     }
   }
   let table = getTable(tableName);
+  if (tableName == "accounts") {
+    entry.role = parseInt(entry.role, 10); // viene como string
+    let emails = table.map(a => a.email);
+    if (emails.includes(entry.email)) {
+      return false;
+    }
+  }
   if (!entry.id) {
     let IDs = table.map(a => a.id);
     let id = 0;
@@ -64,6 +71,7 @@ let addEntry = (tableName, entry) => {
   }
   json[tableName].push(entry);
   save();
+  return true;
 }
 
 let deletePartner = id => {
@@ -134,9 +142,6 @@ let modifyBook = (id, title, author) => {
 let hasDebt = (id, time) => {
   let debt = false;
   getTable("loans").forEach(loan => {
-    if (loan.partner == id) {
-      console.log(`${loan.expiration_date} < ${time} = ${loan.expiration_date < time}`);
-    }
     if (loan.partner == id && loan.expiration_date < time) {
       debt = true;
     }

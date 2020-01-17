@@ -5,8 +5,10 @@ import vuetify from './plugins/vuetify'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueSession from 'vue-session'
+import DisableAutocomplete from 'vue-disable-autocomplete';
 
 
+Vue.use(DisableAutocomplete);
 Vue.use(VueSession, { persist: true })
 Vue.use(VueAxios, axios)
 
