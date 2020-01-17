@@ -415,7 +415,7 @@ export default {
       this.books = [];
       this.myBooks = [];
       this.axios
-        .get("http://localhost:5555/books")
+        .get("http://api_bib:5555/books")
         .then(response => {
           response.data.forEach(book => {
             if (me.selectedBook != null && me.selectedBook.id == book.id) {
@@ -458,7 +458,7 @@ export default {
         let me = this;
         me.loansError = false;
         this.axios
-          .get("http://localhost:5555/loans")
+          .get("http://api_bib:5555/loans")
           .then(response => {
             me.loansError = false;
             response.data.forEach(loan => {
@@ -548,7 +548,7 @@ export default {
     getAccounts() {
       var me = this;
       this.axios
-        .get("http://localhost:5555/partners")
+        .get("http://api_bib:5555/partners")
         .then(response => {
           me.accountsError = false;
           me.accounts = [];
@@ -592,7 +592,7 @@ export default {
       this.editDialog = false;
       let me = this;
       this.axios
-        .post(`http://localhost:5555/partners/`, {
+        .post(`http://api_bib:5555/partners/`, {
           name: me.newAccount.name,
           surname: me.newAccount.surname,
           email: me.newAccount.email,
@@ -650,7 +650,7 @@ export default {
         this.dialog = false;
         let me = this;
         this.axios
-          .delete(`http://localhost:5555/partners/${id}`, { all: true })
+          .delete(`http://api_bib:5555/partners/${id}`, { all: true })
           .then(function() {
             me.snackText = "Cuenta eliminada con éxito";
             me.snackbar = true;
@@ -686,7 +686,7 @@ export default {
         this.editDialog = false;
         let me = this;
         this.axios
-          .put(`http://localhost:5555/books/${id}`, {
+          .put(`http://api_bib:5555/books/${id}`, {
             title: me.newTitle,
             author: me.newAuthor
           })
@@ -730,7 +730,7 @@ export default {
       this.dialog = false;
       let me = this;
       this.axios
-        .post(`http://localhost:5555/books/`, {
+        .post(`http://api_bib:5555/books/`, {
           id: id
         })
         .then(function() {
@@ -759,7 +759,7 @@ export default {
         this.dialog = true;
       } else {
         this.axios
-          .delete(`http://localhost:5555/books/${id}`, {
+          .delete(`http://api_bib:5555/books/${id}`, {
             id: id
           })
           .then(function() {
@@ -788,7 +788,7 @@ export default {
         this.dialog = false;
         let me = this;
         this.axios
-          .delete(`http://localhost:5555/books/${id}`, { data: { all: true } }) // con este método hay que enviar el body así
+          .delete(`http://api_bib:5555/books/${id}`, { data: { all: true } }) // con este método hay que enviar el body así
           .then(function() {
             me.editDialog = false;
             me.selectedBook = null;
@@ -821,7 +821,7 @@ export default {
       this.editDialog = false;
       let me = this;
       this.axios
-        .post(`http://localhost:5555/books/`, {
+        .post(`http://api_bib:5555/books/`, {
           title: me.newTitle,
           author: me.newAuthor,
           inventory: me.newInventory
@@ -873,7 +873,7 @@ export default {
     getName() {
       let me = this;
       this.axios
-        .get(`http://localhost:5555/partners/${me.$session.get("accountID")}`)
+        .get(`http://api_bib:5555/partners/${me.$session.get("accountID")}`)
         .then(response => {
           // lo guardo para usarlo desde el diálogo emergente
           this.userName = response.data.name;

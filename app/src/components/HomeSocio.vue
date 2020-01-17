@@ -144,7 +144,7 @@ export default {
       this.books = [];
       this.myBooks = [];
       this.axios
-        .get("http://localhost:5555/books")
+        .get("http://api_bib:5555/books")
         .then(response => {
           response.data.forEach(book => {
             me.books.push(book);
@@ -182,7 +182,7 @@ export default {
         this.myBooks = [];
         let me = this;
         this.axios
-          .get("http://localhost:5555/loans")
+          .get("http://api_bib:5555/loans")
           .then(response => {
             me.myBooksError = false;
             response.data.forEach(loan => {
@@ -246,7 +246,7 @@ export default {
       this.snackText = "";
       let me = this;
       this.axios
-        .post("http://localhost:5555/loans/lent", {
+        .post("http://api_bib:5555/loans/lent", {
           Bid: id,
           Pid: me.$session.get("accountID")
         })
@@ -289,7 +289,7 @@ export default {
       this.snackText = "";
       let me = this;
       this.axios
-        .post("http://localhost:5555/loans/return", {
+        .post("http://api_bib:5555/loans/return", {
           Bid: id,
           Pid: me.$session.get("accountID")
         })
@@ -351,7 +351,7 @@ export default {
     getPartnerName() {
       let me = this;
       this.axios
-        .get(`http://localhost:5555/partners/${this.$session.get("accountID")}`)
+        .get(`http://api_bib:5555/partners/${this.$session.get("accountID")}`)
         .then(response => {
           // lo guardo para usarlo desde el diálogo emergente
           this.partnerName = response.data.name;

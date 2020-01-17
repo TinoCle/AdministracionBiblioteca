@@ -2,10 +2,11 @@ const valid = require('../validators/validator');
 const http = require('http');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
+const API_DB = 'api_db';
 
 get = async (resp, path) => {
   let promise = new Promise((res, rej) => {
-    http.get(`http://localhost:7070${path}`, (response) => {
+    http.get(`http://${API_DB}:7070${path}`, (response) => {
       let data = '';
       response.on('data', (chunk) => {
         data += chunk;
@@ -30,7 +31,7 @@ post = (res, body, path, method) => {
   }
   const dataToWrite = JSON.stringify(body);
   const options = {
-    host: 'localhost',
+    host: API_DB,
     port: 7070,
     path: path,
     method: method,
@@ -75,7 +76,7 @@ post = (res, body, path, method) => {
 login = async (body) => {
   const dataToWrite = JSON.stringify(body);
   const options = {
-    host: 'localhost',
+    host: API_DB,
     port: 7070,
     path: '/login',
     method: 'POST',

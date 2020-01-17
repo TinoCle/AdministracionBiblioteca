@@ -1,6 +1,7 @@
-version: '2'
+version: '3'
 services:
   api:
+    container_name: api_bib
     build: ./API_Biblioteca
     ports:
         - "5555:5555"
@@ -17,3 +18,9 @@ services:
     environment:
         - NODE_ENV=production
     command: npm start
+  front:
+    build: ./app
+    ports:
+        - "8080:8080"
+    restart: always
+    command: npm run serve

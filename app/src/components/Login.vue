@@ -71,7 +71,7 @@ export default {
       e.preventDefault();
       let me = this;
       this.axios
-        .post("http://localhost:5555/login", {
+        .post("http://api_bib:5555/login", {
           email: this.email,
           password: this.password
         })
