@@ -1,7 +1,6 @@
 version: '3'
 services:
   api:
-    container_name: api_bib
     build: ./API_Biblioteca
     ports:
         - "5555:5555"
@@ -21,6 +20,5 @@ services:
   front:
     build: ./app
     ports:
-        - "8080:8080"
-    restart: always
+      - "8000:8080"
     command: npm run serve
