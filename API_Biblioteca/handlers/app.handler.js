@@ -238,11 +238,15 @@ module.exports = {
           // si quiere borrrar todo y no tiene préstamos
           // si quiere borrar la última copia y no tiene préstamos
           // si tiene inventario suficiente
-          if ((all && !loans.loans) || (book.inventory == 1 && !loans.loans) || book.inventory > 1) {
-            post(res, { all: all }, `/books/${id}`, 'DELETE');
-          } else {
-            console.log(`DELETE /books/${id} HAS LOANS`);
-            res.status(403).json({ message: "The book has loans." });
+          if (all || book.inventory == 1) {
+            if (!loans.loans) {
+              post(res, { all: true }, `/books/${id}`, 'DELETE');
+            } else {
+              console.log(`DELETE /books/${id} HAS LOANS`);
+              res.status(403).json({ message: "The book has loans." });
+            }
+          } else if (book.inventory > 1){
+            post(res, { all: false }, `/books/${id}`, 'DELETE');
           }
         } else {
           console.log(`DELETE /books/${id} NOT FOUND`);
@@ -353,16 +357,6 @@ module.exports = {
       res.status(400).json({ message: "Invalid data." });
     }
   },
-  ///////////////////////////////////////// TIME ////////////////////////////////////
-  // OUT OF SERVICE
-  // modifyTime: (req, res) => {
-  //   let { days } = req.body;
-  //   if (valid.id(days)) {
-  //     post(res, { days: days }, '/modifyTime', 'POST');
-  //   } else {
-  //     res.status(400).json({ message: 'Invalid value.' });
-  //   }
-  // },
   ///////////////////////////////////////// ACCOUNTS ////////////////////////////////////
   login: async (req, res) => {
     let { email } = req.body;

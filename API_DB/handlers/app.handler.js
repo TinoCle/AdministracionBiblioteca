@@ -100,14 +100,6 @@ module.exports = {
         db.returnBook(Pid, Bid, time.getTime());
         res.status(200).json({ message: "Book returned." });
     },
-    /////////////////////////////////// TIME ///////////////////////////////////////
-    // OUT OF SERVICE
-    // modifyTime: (req, res) => {
-    //     let { days } = req.body;
-    //     time.modifyTime(days);
-    //     res.status(200).json({ message: "Time changed.", new_time: time.getTime() });
-    // },
-    /////////////////////////////////// ACCOUNTS ///////////////////////////////////////
     authenticate: (req, res) => {
         let {email} = req.body;
         let {password} = req.body;
