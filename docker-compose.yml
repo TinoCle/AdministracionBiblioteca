@@ -20,5 +20,5 @@ services:
   front:
     build: ./app
     ports:
-      - "8000:8080"
+      - "8080:8080"
     command: npm run serve
