@@ -1,377 +1,137 @@
 ﻿# Biblioteca - API REST
 
+  
+
 ## Tabla de contenidos
-[Descripción](#Descripción)  
-[Escenario](#Escenario)  
-[Socios](#Get---listAllPartners)  
-[Libros](#GET---listAllBooks)  
-[Préstamos](#GET---listAllLoans)  
-[Control de tiempo](#POST---modifyTime)
 
-# 
+[Descripción](#Descripción)
+
+[Escenario](#Escenario)
+
+[Permisos](#Permisos)
+
+[Tutoriales](#Tutoriales)
+
+[Iniciar los containers docker](#Iniciar-los-containers-docker)
+
+[Socio: pedir prestado un libro](#Socio:-pedir-prestado-un-libro)
+
+[Socio: devolver un libro prestado](#Socio:-devolver-un-libro-prestado)
+
+[Bibiotecario: crear un libro](#Bibiotecario:-crear-un-libro)
+
+[Bibliotecario: eliminar un libro](#Bibliotecario:-eliminar-un-libro)
+
+[Bibliotecario: modificar un libro](#Bibliotecario:-modificar-un-libro)
+
+[Bibliotecario: modificar el inventario de un libro](#Bibliotecario:-modificar-el-inventario-de-un-libro)
+
+[Bibliotecario: crear una cuenta de usuario](#Bibliotecario:-crear-una-cuenta-de-usuario)
+
+[Bibliotecario: eliminar una cuenta de usuario](#Bibliotecario:-eliminar-una-cuenta-de-usuario)
+
 ## Descripción
-Esta es una API REST desarrollada en node.js para controlar el funcionamiento de una biblioteca con socios.
+
+Este es un sistema de administración de una biblioteca, basado en los roles socio y bibliotecario, cada uno con sus permisos dentro del sistema mismo.
+
 ## Escenario
-La biblioteca posee una base de datos de socios (*partners*) y otra de libros (*books*), de las cuales se pueden realizar operaciones de consulta, creación y eliminación.
-Los socios pueden pedir prestados cuantos libros quieran por determinado tiempo, vencido el cual ya no pueden llevarse más hasta devolver los que se hayan pasado de fecha.
 
-## Endpoints
-#### GET - listAllPartners()
->localhost:5555/partners/
+La biblioteca posee una base de datos de cuentas y otra de libros, las cuales pueden ser modificadas según los permisos que posea el usuario logueado.
 
-**Response code:** 200
-**Response body:**
+Los socios pueden pedir prestados cuantos libros quieran por determinado tiempo, vencido el cual ya no pueden llevarse más hasta devolver los que se hayan pasado de fecha. Un libor puede devolverse en cualquier momento.
+Pueden visualizar la lista de libros y la de sus préstamos.
 
-    [
-	    {
-        	"name": "john",
-        	"surname": "doe",
-        	"id": 1
-	    },
-	    ...
-    ]
+Los bibliotecarios pueden modificar la información de cualquier libro, crearlos y eliminarlos cuando no estén prestados. También puede modificar el inventario de cada uno.
+Pueden crear cuentas y eliminarlas cuando no posean préstamos activos.
+Pueden visualizar la lista de libros, la de todos los préstamos y las cuentas creadas, tanto de socios como de bibliotecarios.
 
-### GET - getPartner()
->localhost:5555/partners/{id}
+## Permisos
 
-|  | OK| No encontrado | ID no válido |
-|--|--|--|--|
-| Response code | 200 | 404 | 400 |
-| Response body| 1*| 2*| 3* |
-
-
-**Response body: (1)**
-
-    {	
-        "name": "john",
-        "surname": "doe",
-        "id": 1
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The partner doesn't exist."
-	}
-**Response body: (3)**
-
-    {
-	    "message": "Invalid id."
-	}
-### POST - addPartner()
->localhost:5555/partners/
-
-**Request body:**
-
-    {	
-        "name": "john",
-        "surname": "doe",
-        "id": 1
-	}
-|  | OK | Datos inválidos | Conflicto |
-|--|--|--|--|
-| Response code | 200 | 404 | 409 |
-| Response body| 1*| 2*| 3* |
-
-**Response body: (1)**
-
-    {	
-	    "message": "Created.",
-        "name": "john",
-        "surname": "doe",
-        "id": 1
-	}
-
-**Response body: (2)**
-
-    {	
-	    "message": "Invalid data."
-	}
-**Response body: (3)**
-
-    {
-	    "message": "The partner already exist."
-	}
-### DELETE- deletePartner()
->localhost:5555/partners/{id}
-
-|  | OK| No encontrado | ID no válido |
-|--|--|--|--|
-| Response code | 200 | 404 | 400 |
-| Response body| 1*| 2*| 3* |
-
-
-**Response body: (1)**
-
-    {	
-        "message": "Deleted."
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The partner doesn't exist."
-	}
-**Response body: (3)**
-
-    {
-	    "message": "Invalid id."
-	}
-### GET - listAllBooks()
->localhost:5555/books/
-
-**Response code:** 200
-**Response body:**
-
-    [
-	    {
-	        "title": "The beauty and the beast",
-	        "author": "Gabrielle-Suzanne Barbot de Villeneuve",
-	        "inventory": 2
-	        "id": 1
-	    },
-	    ...
-    ]
-    
-### GET - getBook()
->localhost:5555/boooks/{id}
-
-|  | OK| No encontrado | ID no válido |
-|--|--|--|--|
-| Response code | 200 | 404 | 400 |
-| Response body| 1*| 2*| 3* |
-
-
-**Response body: (1)**
-
-    {
-	    "title": "The beauty and the beast",
-	    "author": "Gabrielle-Suzanne Barbot de Villeneuve",
-	    "inventory": 2
-	    "id": 1
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The book doesn't exist."
-	}
-**Response body: (3)**
-
-    {
-	    "message": "Invalid id."
-	}
-### POST - addBook()
->localhost:5555/books/
-
-**Request body:**
-
-    {	
-        "title": "Pinocho",
-        "author": "Carlo Collodi",
-        "id": 2
-	}
-|  | Libro nuevo | Libro existente  | Datos inválidos|
-|--|--|--|--|
-| Response code | 201 | 200 | 404 |
-| Response body| 1* | 2* | 3* |
-
-**Response body: (1)**
-
-    {
-	    "message": "Book added to collection."
-	}
-
-**Response body: (2)**
-
-    {	
-	    "message": "Book added to inventory."
-	}
-**Response body: (3)**
-
-    {
-	    "message": "Invalid data."
-	}
-### DELETE- deleteBook()
->localhost:5555/books/{id}
-
-|  | OK| Inventario vacío | ID no válido |
-|--|--|--|--|
-| Response code | 200 | 404 | 400 |
-| Response body| 1*| 2*| 3* |
-
-
-**Response body: (1)**
-
-    {	
-        "message": "Deleted."
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The inventory of this book is empty."
-	}
-**Response body: (3)**
-
-    {
-	    "message": "Invalid id."
-	}
-### GET - listAllLoans()
->localhost:5555/loans/
-
-**Response code:** 200
-**Response body:**
-
-    [
-	    {
-	        "partner": 7,
-	        "book": 3,
-	        "expiration_date": "2019-05-19T13:38:16.812Z"
-	    },
-	    ...
-    ]
-### GET - lentBook()
->localhost:5555/boooks/{id}
-
-**Request body:**
-
-    {
-		"Bid": 3,
-		"Pid": 7
-	}
-	
-|  | OK| En deuda | Socio inexistente | Sin inventario | Libro inexistente | Datos inválidos |
-|--|--|--|--|--|--|--|
-| Response code | 200 | 400| 404 | 404 | 404 | 400 |
-| Response body| 1*| 2*| 3* | 4* | 5* | 6* |
-
-
-**Response body: (1)**
-
-    {
-	    "message": "Book lent.",
-	    "expiration_date": "2019-05-19T13:38:16.812Z"
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The partner has overdue debts.",
-	}
-**Response body: (3)**
-
-    {
-	    "message": "The partner doesn't exist."
-	}
-**Response body: (4)**
-
-    {
-	    "message": "The inventory of this book is empty."
-	}
-**Response body: (5)**
-
-    {
-	    "message": "The book doesn't exist."
-	}
-**Response body: (6)**
-
-    {
-	    "message": "Invalid data."
-	}
-### POST- lentBook()
->localhost:5555/boooks/{id}
-
-|  | OK| En deuda | Socio inexistente | Sin inventario | Libro inexistente | Datos inválidos |
-|--|--|--|--|--|--|--|
-| Response code | 200 | 400| 404 | 404 | 404 | 400 |
-| Response body| 1*| 2*| 3* | 4* | 5* | 6* |
-
-
-**Response body: (1)**
-
-    {
-	    "message": "Book lent.",
-	    "expiration_date": "2019-05-19T13:38:16.812Z"
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The partner has overdue debts.",
-	}
-**Response body: (3)**
-
-    {
-	    "message": "The partner doesn't exist."
-	}
-**Response body: (4)**
-
-    {
-	    "message": "The inventory of this book is empty."
-	}
-**Response body: (5)**
-
-    {
-	    "message": "The book doesn't exist."
-	}
-**Response body: (6)**
-
-    {
-	    "message": "Invalid data."
-	}
-### POST- returnBook()
->localhost:5555/boooks/{id}
-
-|  | OK| Libro o socio incorrectos | Socio inexistente | Libro inexistente | Datos inválidos |
-|--|--|--|--|--|--|
-| Response code | 200 | 404| 404 | 404 | 400 |
-| Response body| 1*| 2*| 3* | 4* | 5* |
-
-
-**Response body: (1)**
-
-    {
-	    "message": "Book returned."
-	}
-**Response body: (2)**
-
-    {
-	    "message": "The partner doesn't have that book.",
-	}
-**Response body: (3)**
-
-    {
-	    "message": "The partner doesn't exist."
-	}
-**Response body: (4)**
-
-    {
-	    "message": "The book doesn't exist."
-	}
-**Response body: (5)**
-
-    {
-	    "message": "Invalid data."
-	}
-
-### POST - modifyTime()
->localhost:5555/time/
-
-Endpoint utilizado para testing, permite movernos hacia adelante y hacia atrás en el tiempo para forzar el vencimiento de los préstamos.
-**Request body:**
-
-    {	
-        "days": 7
-	}
-|  | OK| Valor inválido |
+| Permiso | Bibliotecario | Socio |
 |--|--|--|
-| Response code | 200 | 400 |
-| Response body| 1*| 2*|
+| Ver libros | ✔️ | ✔️ |
+| Ver préstamos | ✔️ (todos) | ✔️ (sólo propios) |
+| Pedir/devolver libros | ❌ | ✔️ |
+| Crear libros | ✔️ | ❌ |
+| Modificar libros | ✔️ | ❌ |
+| Eliminar libros | ✔️ | ❌ |
+| Ver cuentas | ✔️ | ❌ |
+| Crear cuentas | ✔️ | ❌ |
+| Eliminar cuentas | ✔️ | ❌ |
 
 
-**Response body: (1)**
+## Tutoriales
+Para seguir los pasos de los tutoriales deberá loguearse en la página, las credenciales para testing se encuentran en el archivo *credentials.txt*.
 
-    {
-	    "message": "Time changed.",
-	    "new_time": "2019-05-09T00:00:00.000Z"
-	}
-**Response body: (2)**
+### Iniciar los containers docker
+Correr los siguientes comandos en la carpeta raíz del proyecto:
 
-    {
-	    "message": "Invalid value."
-	}
+	docker-compose build
+	docker-compose up
+
+### Socio: pedir prestado un libro
+Diríjase al listado de todos los libros, para pedir uno debe hacer click en el botón **PEDIR**. 
+![Click en PEDIR](https://i.imgur.com/S7R6Cf2.png)
+El libro pedido debería aparecer en el listado de préstamos, a la derecha.
+![Libro pedido](https://i.imgur.com/MdgvFNW.png)
+**Atención:** si el socio tiene préstamos vencidos, no podrá pedir más hasta haber devuelto los mismos.
+![Cartel de préstamos vencidos](https://i.imgur.com/HM9mBMn.png)
+**Atención:** si algún libro está sin stock, su botón para pedirlo va a estar deshabilitado.
+![Botón PEDIR deshabilitado](https://i.imgur.com/lDWuvqq.png)
+### Socio: devolver un libro prestado
+Diríjase al listado de préstamos y haga click en el botón **DEVOLVER**.
+![Click en DEVOLVER](https://i.imgur.com/mo6dasB.png)
+El libro devuelto va a desaparecer del listado de préstamos.
+![Libro devuelto](https://i.imgur.com/D39A6Ac.png)
+
+### Bibiotecario: crear un libro
+Diríjase al listado de libros y haga click sobre el ícono indicado en la imágen.
+![Click en ícono para agregar libro](https://i.imgur.com/HrKUyF0.png)
+Llene los campos solicitados y haga click en el botón **AGREGAR**.
+![Click en el botón AGREGAR](https://i.imgur.com/GhOao0s.png)
+El nuevo libro aparecerá en el listado.
+![Libro nuevo en listado](https://i.imgur.com/aHVE3jq.png)
+### Bibliotecario: eliminar un libro
+En el listado de libros, haga click sobre el que desee eliminar.
+![Click sobre un libro](https://i.imgur.com/ECS0cA8.png)
+Se abrirá la información del libro, hacer click en el botón de edición.
+![Click en el botón de edición](https://i.imgur.com/xSk6j9R.png)
+Sin modificar sus datos, haga click en el botón apropiado para borrarlo.
+![Click en icono para borrar](https://i.imgur.com/P501XPb.png)
+El libro desaparecerá del listado.
+![Libro desapareció del listado](https://i.imgur.com/uCXZYS7.png)
+**Atención:** si el libro posee préstamos activos no va a poder eliminarse.
+![Intento de eliminar libro con préstamos](https://i.imgur.com/bZVTwb5.png)
+
+### Bibliotecario: modificar un libro
+En el listado de libros, haga click sobre el que desee modificar.
+![Click sobre un libro](https://i.imgur.com/ECS0cA8.png)
+Se abrirá la información del libro, hacer click en el botón de edición.
+![Click en el botón de edición](https://i.imgur.com/xSk6j9R.png)
+Modifique la información del libro y haga click en el botón **GUARDAR**.
+![Click en el botón GUARDAR](https://i.imgur.com/GiRV359.png)
+La infomación del libro se verá modificada.
+![Información del libro modificada](https://i.imgur.com/2k7PBfq.png)
+### Bibliotecario: modificar el inventario de un libro
+En el listado de libros, haga click sobre el que desee modificar.
+![Selección del libro a modificar inventario](https://i.imgur.com/6MPlXjV.png)
+Se abrirá la información del libro, use los botones indicados para modificar el inventario del libro.
+![Modificando inventario del libro](https://i.imgur.com/SJiGR6g.png)
+**Atención:** Al eliminar la última copia de un libro, se eliminará totalmente de la base de datos.
+Al intentar eliminar la última copia de un libro con préstamos, un cartel advertirá la imposibilidad de realizar la acción.
+![No se puede eliminar la copia](https://i.imgur.com/1dukwjz.png)
+### Bibliotecario: crear una cuenta de usuario
+En el listado de cuentas, haga click en el ícono indicado en la imágen.
+![Click en el ícono para agregar una cuenta nueva](https://i.imgur.com/F9lK3hl.png)
+Llene los datos de la cuenta y haga click en **AGREGAR**.
+![Creando cuenta nueva](https://i.imgur.com/cS2qDHm.png)
+La cuenta nueva aparecerá en el listado.
+![Cuenta nueva agregada](https://i.imgur.com/g2Pz9u4.png)
+### Bibliotecario: eliminar una cuenta de usuario
+En el listado de cuentas, haga click en el ícono correspondiente de la cuenta que desee eliminar.
+![Eliminando cuenta](https://i.imgur.com/Fv6pQF7.png)
+La cuenta será eliminada del listado.
+![Cuenta eliminada del listado](https://i.imgur.com/gldlKgt.png)
+**Atención:** si la cuenta es de socio y además tiene préstamos activos, no va a poder eliminarla.
+![No se puede eliminar la cuenta](https://i.imgur.com/9C1myXz.png)
+**Atención:** no se puede eliminar la cuenta actual, por lo que el ícono no estará presente.
