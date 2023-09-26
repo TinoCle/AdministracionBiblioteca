@@ -14,22 +14,6 @@
 
 [Iniciar los containers docker](#Iniciar-los-containers-docker)
 
-[Socio: pedir prestado un libro](#Socio:-pedir-prestado-un-libro)
-
-[Socio: devolver un libro prestado](#Socio:-devolver-un-libro-prestado)
-
-[Bibiotecario: crear un libro](#Bibiotecario:-crear-un-libro)
-
-[Bibliotecario: eliminar un libro](#Bibliotecario:-eliminar-un-libro)
-
-[Bibliotecario: modificar un libro](#Bibliotecario:-modificar-un-libro)
-
-[Bibliotecario: modificar el inventario de un libro](#Bibliotecario:-modificar-el-inventario-de-un-libro)
-
-[Bibliotecario: crear una cuenta de usuario](#Bibliotecario:-crear-una-cuenta-de-usuario)
-
-[Bibliotecario: eliminar una cuenta de usuario](#Bibliotecario:-eliminar-una-cuenta-de-usuario)
-
 ## Descripción
 
 Este es un sistema de administración de una biblioteca, basado en los roles socio y bibliotecario, cada uno con sus permisos dentro del sistema mismo.
